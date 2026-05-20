@@ -5,7 +5,7 @@
 ## Layout
 
 ```
-Resturant-App/
+Restaurant-App/
 ├── app/                            # Single Gradle module
 │   └── src/main/
 │       ├── AndroidManifest.xml
@@ -48,8 +48,8 @@ After install, note where Android Studio put the SDK. Open **Settings → Langua
 ### **2. Get the code**
 
 ```powershell
-git clone <repo-url> Resturant-App
-cd Resturant-App
+git clone https://github.com/Pekkapost/Restaurant-App.git
+cd Restaurant-App
 ```
 
 If you don't have git, download the repo as a ZIP and unzip it. Then `cd` into the folder in PowerShell.
@@ -68,7 +68,7 @@ MAPS_API_KEY=
 
 ### **4. Open the project in Android Studio**
 
-`File → Open → ` select the **`Resturant-App`** folder (not a subfolder). Android Studio runs a Gradle sync that downloads ~1 GB of dependencies the first time — takes 2–5 minutes. Wait until the bottom status bar reads "Gradle sync finished".
+`File → Open → ` select the **`Restaurant-App`** folder (not a subfolder). Android Studio runs a Gradle sync that downloads ~1 GB of dependencies the first time — takes 2–5 minutes. Wait until the bottom status bar reads "Gradle sync finished".
 
 If the sync fails complaining about an SDK component, click the offered "Install missing platform/build-tools" link.
 
@@ -161,4 +161,4 @@ All data is stored locally in a Room database at the app's private data director
 
 ## Authors
 
-- **@you** — Author
+- [@Pekkapost](https://github.com/Pekkapost) — Author
