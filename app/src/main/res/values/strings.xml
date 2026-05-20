@@ -4,9 +4,11 @@
 
     <!-- List screen -->
     <string name="list_title">Restaurants</string>
-    <string name="list_empty">No restaurants yet. Tap + to add your first.</string>
+    <string name="list_empty">No restaurants yet. Tap Add restaurant to add your first.</string>
+    <string name="list_no_matches">No restaurants match your search.</string>
     <string name="list_search_hint">Search</string>
     <string name="list_sort">Sort</string>
+    <string name="list_filter">Filter</string>
     <string name="list_sort_recent">Recently visited</string>
     <string name="list_sort_rating">Highest rated</string>
     <string name="list_sort_name">Name (A–Z)</string>

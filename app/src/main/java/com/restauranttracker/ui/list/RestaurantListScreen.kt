@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -98,9 +98,12 @@ fun RestaurantListScreen(
             ActiveFilterChips(filters, vm)
 
             if (items.isEmpty()) {
+                val emptyMessage =
+                    if (filters.query.isNotBlank() || filters.hasAny) R.string.list_no_matches
+                    else R.string.list_empty
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = stringResource(R.string.list_empty),
+                        text = stringResource(emptyMessage),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(32.dp),
                     )
@@ -153,7 +156,7 @@ private fun ListToolbarActions(
     }
 
     IconButton(onClick = { filterOpen = true }) {
-        Icon(Icons.Filled.FilterList, contentDescription = "Filter")
+        Icon(Icons.Filled.Tune, contentDescription = stringResource(R.string.list_filter))
     }
     DropdownMenu(expanded = filterOpen, onDismissRequest = { filterOpen = false }) {
         (0..5).forEach { stars ->
