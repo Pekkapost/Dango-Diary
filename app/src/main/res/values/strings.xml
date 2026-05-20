@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Restaurant Tracker</string>
+
+    <!-- List screen -->
+    <string name="list_title">Restaurants</string>
+    <string name="list_empty">No restaurants yet. Tap + to add your first.</string>
+    <string name="list_search_hint">Search</string>
+    <string name="list_sort">Sort</string>
+    <string name="list_sort_recent">Recently visited</string>
+    <string name="list_sort_rating">Highest rated</string>
+    <string name="list_sort_name">Name (A–Z)</string>
+    <string name="list_sort_price">Price (low to high)</string>
+    <string name="list_filter_min_rating">Min rating: %1$d★</string>
+    <string name="list_filter_has_photo">Has photo</string>
+    <string name="list_filter_clear">Clear filters</string>
+    <string name="action_add">Add restaurant</string>
+
+    <!-- Edit screen -->
+    <string name="edit_title_new">New restaurant</string>
+    <string name="edit_title_edit">Edit restaurant</string>
+    <string name="edit_field_name">Name</string>
+    <string name="edit_field_date">Date visited</string>
+    <string name="edit_field_rating">Rating</string>
+    <string name="edit_field_notes">Notes</string>
+    <string name="edit_field_companions">Who you went with (comma separated)</string>
+    <string name="edit_field_price">Dish price</string>
+    <string name="edit_field_currency">Currency code (e.g. USD)</string>
+    <string name="edit_field_address">Address</string>
+    <string name="edit_pick_on_map">Pick on map</string>
+    <string name="edit_clear_pin">Clear pin</string>
+    <string name="edit_add_photo">Add photo</string>
+    <string name="edit_take_photo">Take photo</string>
+    <string name="edit_choose_photo">Choose from gallery</string>
+    <string name="edit_save">Save</string>
+    <string name="edit_cancel">Cancel</string>
+    <string name="edit_name_required">Name is required.</string>
+    <string name="edit_rating_required">Rating must be 1–5.</string>
+    <string name="edit_price_invalid">Price must be a non-negative number.</string>
+
+    <!-- Detail screen -->
+    <string name="detail_title">Restaurant</string>
+    <string name="detail_action_edit">Edit</string>
+    <string name="detail_action_delete">Delete</string>
+    <string name="detail_open_in_maps">Open in Maps</string>
+    <string name="detail_delete_confirm_title">Delete this restaurant?</string>
+    <string name="detail_delete_confirm_message">This cannot be undone.</string>
+    <string name="detail_delete_confirm_ok">Delete</string>
+    <string name="detail_delete_confirm_cancel">Cancel</string>
+    <string name="detail_with">With: %1$s</string>
+    <string name="detail_price">Dish: %1$s</string>
+    <string name="detail_rating">Rating: %1$d / 5</string>
+    <string name="detail_visited">Visited %1$s</string>
+    <string name="detail_no_pin">No map pin set.</string>
+
+    <!-- Map picker -->
+    <string name="map_picker_title">Tap the map to place a pin</string>
+    <string name="map_picker_use_location">Use my location</string>
+    <string name="map_picker_confirm">Use this pin</string>
+    <string name="map_picker_cancel">Cancel</string>
+    <string name="map_picker_no_key">Map unavailable — set MAPS_API_KEY in local.properties.</string>
+
+    <!-- Permissions -->
+    <string name="perm_camera_rationale">Camera access is needed to take a photo for this restaurant.</string>
+    <string name="perm_location_rationale">Location access is needed to center the map on your current position.</string>
+</resources>
