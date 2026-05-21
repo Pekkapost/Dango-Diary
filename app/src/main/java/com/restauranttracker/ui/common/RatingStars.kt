@@ -16,9 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 
-// Conventional rating-amber. Deliberately fixed rather than themed: users expect star ratings
-// to read as warm gold across apps, and dynamic-color tints can land on anything from pink to teal.
-private val RatingAmber = Color(0xFFFFB300)
+// Muted gold. Deliberately fixed rather than themed: users expect star ratings to read as warm
+// gold across apps, and dynamic-color tints can land on anything from pink to teal. Desaturated
+// from the conventional bright amber so the stars don't dominate a busy list row.
+private val RatingAmber = Color(0xFFCBA135)
 
 /**
  * Rating in half-star units (0..maxStars*2). For example, 7 renders as 3.5 stars.
