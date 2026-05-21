@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import com.restauranttracker.util.formatDate
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,8 +49,11 @@ fun DatePickerField(
     }
 
     if (open) {
+        // Material3's DatePicker treats selectedDateMillis as UTC midnight of the chosen day,
+        // so we must use UTC on both sides — converting via the system zone shifts the date
+        // for users west of UTC.
         val initialMillis = LocalDate.ofEpochDay(epochDay)
-            .atStartOfDay(ZoneId.systemDefault())
+            .atStartOfDay(ZoneOffset.UTC)
             .toInstant()
             .toEpochMilli()
         val state = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
@@ -61,7 +64,7 @@ fun DatePickerField(
                     val millis = state.selectedDateMillis
                     if (millis != null) {
                         val picked = Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(ZoneOffset.UTC)
                             .toLocalDate()
                         onDateChange(picked.toEpochDay())
                     }
