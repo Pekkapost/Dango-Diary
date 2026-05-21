@@ -49,10 +49,9 @@
     <string name="detail_delete_confirm_message">This cannot be undone.</string>
     <string name="detail_delete_confirm_ok">Delete</string>
     <string name="detail_delete_confirm_cancel">Cancel</string>
-    <string name="detail_with">With: %1$s</string>
-    <string name="detail_price">Dish: %1$s</string>
-    <string name="detail_visited">Visited %1$s</string>
-    <string name="detail_no_pin">No map pin set.</string>
+    <string name="detail_section_notes">Notes</string>
+    <string name="detail_section_with">Dined with</string>
+    <string name="detail_section_location">Location</string>
 
     <!-- Map picker -->
     <string name="map_picker_title">Tap the map to place a pin</string>

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,8 +18,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -128,80 +130,116 @@ private fun DetailBody(restaurant: Restaurant, modifier: Modifier = Modifier) {
     val photos = remember(restaurant.photoPathsJson) {
         PhotoPaths.decode(restaurant.photoPathsJson)
     }
-
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(restaurant.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(stringResource(R.string.detail_visited, formatDate(restaurant.visitedOn)))
-        RatingStars(rating = restaurant.rating)
-
+    val lat = restaurant.latitude
+    val lng = restaurant.longitude
+    val hasLocation = !restaurant.addressText.isNullOrBlank() || (lat != null && lng != null)
+    val subtitle = buildString {
+        append(formatDate(restaurant.visitedOn))
         if (restaurant.dishPriceCents != null) {
-            Text(
-                stringResource(
-                    R.string.detail_price,
-                    formatPrice(restaurant.dishPriceCents, restaurant.currencyCode),
-                )
+            append("  ·  ")
+            append(formatPrice(restaurant.dishPriceCents, restaurant.currencyCode))
+        }
+    }
+
+    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        if (photos.isNotEmpty()) {
+            PhotoGrid(
+                paths = photos,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
             )
         }
 
-        if (restaurant.companions.isNotBlank()) {
-            Text(stringResource(R.string.detail_with, restaurant.companions))
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                restaurant.name,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            RatingStars(rating = restaurant.rating)
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         if (restaurant.notes.isNotBlank()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    restaurant.notes,
-                    modifier = Modifier.padding(12.dp),
-                )
+            HorizontalDivider()
+            DetailSection(title = stringResource(R.string.detail_section_notes)) {
+                Text(restaurant.notes, style = MaterialTheme.typography.bodyMedium)
             }
         }
 
-        if (!restaurant.addressText.isNullOrBlank()) {
-            Text(restaurant.addressText, style = MaterialTheme.typography.bodyMedium)
+        if (restaurant.companions.isNotBlank()) {
+            HorizontalDivider()
+            DetailSection(title = stringResource(R.string.detail_section_with)) {
+                Text(restaurant.companions, style = MaterialTheme.typography.bodyMedium)
+            }
         }
 
-        val lat = restaurant.latitude
-        val lng = restaurant.longitude
-        if (lat != null && lng != null) {
-            val cameraState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(LatLng(lat, lng), 15f)
+        if (hasLocation) {
+            HorizontalDivider()
+            DetailSection(title = stringResource(R.string.detail_section_location)) {
+                if (!restaurant.addressText.isNullOrBlank()) {
+                    Text(restaurant.addressText, style = MaterialTheme.typography.bodyMedium)
+                }
+                if (lat != null && lng != null) {
+                    val cameraState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(LatLng(lat, lng), 15f)
+                    }
+                    GoogleMap(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        cameraPositionState = cameraState,
+                        uiSettings = MapUiSettings(
+                            zoomControlsEnabled = false,
+                            scrollGesturesEnabled = false,
+                            tiltGesturesEnabled = false,
+                            rotationGesturesEnabled = false,
+                            zoomGesturesEnabled = false,
+                        ),
+                    ) {
+                        Marker(state = MarkerState(position = LatLng(lat, lng)))
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            val uri = "geo:$lat,$lng?q=$lat,$lng(${Uri.encode(restaurant.name)})".toUri()
+                            ctx.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                        },
+                    ) {
+                        Icon(Icons.Filled.Map, contentDescription = null)
+                        Text("  ${stringResource(R.string.detail_open_in_maps)}")
+                    }
+                }
             }
-            GoogleMap(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                cameraPositionState = cameraState,
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = false,
-                    scrollGesturesEnabled = false,
-                    tiltGesturesEnabled = false,
-                    rotationGesturesEnabled = false,
-                    zoomGesturesEnabled = false,
-                ),
-            ) {
-                Marker(state = MarkerState(position = LatLng(lat, lng)))
-            }
-            OutlinedButton(
-                onClick = {
-                    val uri = "geo:$lat,$lng?q=$lat,$lng(${Uri.encode(restaurant.name)})".toUri()
-                    ctx.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                },
-            ) {
-                Icon(Icons.Filled.Map, contentDescription = null)
-                Text("  ${stringResource(R.string.detail_open_in_maps)}")
-            }
-        } else {
-            Text(stringResource(R.string.detail_no_pin), style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
 
-        if (photos.isNotEmpty()) {
-            PhotoGrid(paths = photos, modifier = Modifier.height(360.dp))
-        }
+@Composable
+private fun DetailSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            letterSpacing = 1.sp,
+        )
+        content()
     }
 }
