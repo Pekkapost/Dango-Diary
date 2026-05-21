@@ -52,6 +52,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.restauranttracker.R
 import com.restauranttracker.RestaurantApp
+import com.restauranttracker.data.CuisineCatalog
 import com.restauranttracker.data.PhotoPaths
 import com.restauranttracker.data.Restaurant
 import com.restauranttracker.ui.common.PhotoGrid
@@ -133,13 +134,13 @@ private fun DetailBody(restaurant: Restaurant, modifier: Modifier = Modifier) {
     val lat = restaurant.latitude
     val lng = restaurant.longitude
     val hasLocation = !restaurant.addressText.isNullOrBlank() || (lat != null && lng != null)
-    val subtitle = buildString {
-        append(formatDate(restaurant.visitedOn))
+    val subtitle = buildList {
+        CuisineCatalog.labelFor(restaurant.cuisine)?.let { add(it) }
+        add(formatDate(restaurant.visitedOn))
         if (restaurant.dishPriceCents != null) {
-            append("  ·  ")
-            append(formatPrice(restaurant.dishPriceCents, restaurant.currencyCode))
+            add(formatPrice(restaurant.dishPriceCents, restaurant.currencyCode))
         }
-    }
+    }.joinToString("  ·  ")
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (photos.isNotEmpty()) {

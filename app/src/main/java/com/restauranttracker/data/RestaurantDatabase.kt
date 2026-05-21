@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Restaurant::class],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class RestaurantDatabase : RoomDatabase() {
@@ -25,7 +25,14 @@ abstract class RestaurantDatabase : RoomDatabase() {
             }
         }
 
-        // When a v3 ships, add a Migration here and pass it to addMigrations(...).
+        // v3 adds an optional cuisine tag (id from CuisineCatalog).
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE restaurants ADD COLUMN cuisine TEXT")
+            }
+        }
+
+        // When a v4 ships, add a Migration here and pass it to addMigrations(...).
         // Never use fallbackToDestructiveMigration — losing user data is not an upgrade path.
         fun build(context: Context): RestaurantDatabase =
             Room.databaseBuilder(
@@ -33,7 +40,7 @@ abstract class RestaurantDatabase : RoomDatabase() {
                 RestaurantDatabase::class.java,
                 "restaurants.db",
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
     }
 }

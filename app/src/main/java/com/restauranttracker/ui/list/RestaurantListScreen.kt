@@ -49,6 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.restauranttracker.R
 import com.restauranttracker.RestaurantApp
+import com.restauranttracker.data.CuisineCatalog
 import com.restauranttracker.data.PhotoPaths
 import com.restauranttracker.data.Restaurant
 import com.restauranttracker.ui.common.RatingStars
@@ -260,9 +261,13 @@ private fun RestaurantRow(restaurant: Restaurant, onClick: () -> Unit) {
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
-                        if (!restaurant.addressText.isNullOrBlank()) {
+                        val subtitle = listOfNotNull(
+                            CuisineCatalog.labelFor(restaurant.cuisine),
+                            restaurant.addressText?.takeIf { it.isNotBlank() },
+                        ).joinToString("  ·  ")
+                        if (subtitle.isNotEmpty()) {
                             Text(
-                                text = restaurant.addressText,
+                                text = subtitle,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,

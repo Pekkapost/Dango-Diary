@@ -25,7 +25,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -46,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.model.LatLng
 import com.restauranttracker.R
 import com.restauranttracker.RestaurantApp
+import com.restauranttracker.ui.common.CuisinePickerField
 import com.restauranttracker.ui.common.DatePickerField
 import com.restauranttracker.ui.common.PhotoGrid
 import com.restauranttracker.ui.common.RatingStars
@@ -133,6 +136,14 @@ fun RestaurantEditScreen(
                 singleLine = true,
             )
 
+            CuisinePickerField(
+                label = stringResource(R.string.edit_field_cuisine),
+                selectedId = s.cuisine,
+                onSelect = vm::setCuisine,
+                placeholder = stringResource(R.string.edit_cuisine_placeholder),
+                clearLabel = stringResource(R.string.edit_cuisine_clear),
+            )
+
             DatePickerField(
                 label = stringResource(R.string.edit_field_date),
                 epochDay = s.visitedOn,
@@ -140,13 +151,22 @@ fun RestaurantEditScreen(
             )
 
             Column {
-                Text(stringResource(R.string.edit_field_rating))
-                RatingStars(rating = s.rating, onRatingChange = vm::setRating)
+                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        Text(
+                            text = stringResource(R.string.edit_field_rating),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        RatingStars(rating = s.rating, onRatingChange = vm::setRating)
+                    }
+                }
                 if (s.ratingError != null) {
                     Text(
-                        stringResource(R.string.edit_rating_required),
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.error,
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                        text = stringResource(R.string.edit_rating_required),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp),
                     )
                 }
             }

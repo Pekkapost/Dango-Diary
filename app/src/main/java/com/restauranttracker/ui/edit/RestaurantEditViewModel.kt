@@ -26,6 +26,7 @@ data class EditState(
     val name: String = "",
     val visitedOn: Long = LocalDate.now().toEpochDay(),
     val rating: Int = 0,
+    val cuisine: String? = null,
     val notes: String = "",
     val companions: String = "",
     val priceText: String = "",
@@ -73,6 +74,7 @@ class RestaurantEditViewModel(
                 name = r.name,
                 visitedOn = r.visitedOn,
                 rating = r.rating,
+                cuisine = r.cuisine,
                 notes = r.notes,
                 companions = r.companions,
                 priceText = r.dishPriceCents?.let { cents ->
@@ -92,6 +94,7 @@ class RestaurantEditViewModel(
     fun setName(v: String) = _state.update { it.copy(name = v, nameError = null) }
     fun setDate(v: Long) = _state.update { it.copy(visitedOn = v) }
     fun setRating(v: Int) = _state.update { it.copy(rating = v, ratingError = null) }
+    fun setCuisine(v: String?) = _state.update { it.copy(cuisine = v) }
     fun setNotes(v: String) = _state.update { it.copy(notes = v) }
     fun setCompanions(v: String) = _state.update { it.copy(companions = v) }
     fun setPriceText(v: String) = _state.update { it.copy(priceText = v, priceError = null) }
@@ -147,6 +150,7 @@ class RestaurantEditViewModel(
             name = name,
             visitedOn = s.visitedOn,
             rating = s.rating,
+            cuisine = s.cuisine,
             notes = s.notes.trim(),
             companions = s.companions.trim(),
             dishPriceCents = priceCents,

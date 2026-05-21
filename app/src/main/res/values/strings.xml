@@ -24,6 +24,9 @@
     <string name="edit_field_name">Name</string>
     <string name="edit_field_date">Date visited</string>
     <string name="edit_field_rating">Rating</string>
+    <string name="edit_field_cuisine">Cuisine</string>
+    <string name="edit_cuisine_placeholder">Select cuisine</string>
+    <string name="edit_cuisine_clear">Clear cuisine</string>
     <string name="edit_field_notes">Notes</string>
     <string name="edit_field_companions">Who you went with (comma separated)</string>
     <string name="edit_field_price">Dish price</string>

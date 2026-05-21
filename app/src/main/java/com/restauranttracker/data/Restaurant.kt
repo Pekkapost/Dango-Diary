@@ -16,6 +16,9 @@ data class Restaurant(
 
     val rating: Int,
 
+    /** ID from [CuisineCatalog]; null = unset. */
+    val cuisine: String? = null,
+
     val notes: String = "",
 
     val companions: String = "",
