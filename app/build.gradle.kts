@@ -29,6 +29,7 @@ android {
         versionName = "0.1.0"
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -52,6 +53,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -85,6 +87,7 @@ dependencies {
     implementation(libs.google.maps.compose)
     implementation(libs.google.play.services.maps)
     implementation(libs.google.play.services.location)
+    implementation(libs.google.places)
     implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.kotlinx.serialization.json)

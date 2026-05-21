@@ -13,6 +13,7 @@ coil = "2.7.0"
 mapsCompose = "4.4.1"
 playServicesMaps = "19.0.0"
 playServicesLocation = "21.3.0"
+places = "4.1.0"
 kotlinxSerialization = "1.7.3"
 kotlinxCoroutines = "1.9.0"
 
@@ -42,6 +43,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 google-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 google-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }

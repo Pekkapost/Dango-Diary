@@ -99,9 +99,14 @@ class RestaurantEditViewModel(
     fun setCompanions(v: String) = _state.update { it.copy(companions = v) }
     fun setPriceText(v: String) = _state.update { it.copy(priceText = v, priceError = null) }
     fun setCurrencyCode(v: String) = _state.update { it.copy(currencyCode = v.uppercase()) }
-    fun setAddress(v: String) = _state.update { it.copy(addressText = v) }
-    fun setPin(lat: Double?, lng: Double?) =
-        _state.update { it.copy(latitude = lat, longitude = lng) }
+    /** Set address and coordinates together when the user picks an autocomplete result. */
+    fun setPlace(address: String, lat: Double, lng: Double) = _state.update {
+        it.copy(addressText = address, latitude = lat, longitude = lng)
+    }
+
+    fun clearLocation() = _state.update {
+        it.copy(addressText = "", latitude = null, longitude = null)
+    }
 
     fun addPhotoPath(path: String) {
         addedPaths += path

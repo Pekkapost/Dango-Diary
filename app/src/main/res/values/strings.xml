@@ -32,8 +32,8 @@
     <string name="edit_field_price">Dish price</string>
     <string name="edit_field_currency">Currency code (e.g. USD)</string>
     <string name="edit_field_address">Address</string>
-    <string name="edit_pick_on_map">Pick on map</string>
-    <string name="edit_clear_pin">Clear pin</string>
+    <string name="edit_address_placeholder">Search for a place</string>
+    <string name="edit_clear_location">Clear location</string>
     <string name="edit_add_photo">Add photo</string>
     <string name="edit_take_photo">Take photo</string>
     <string name="edit_choose_photo">Choose from gallery</string>
@@ -55,13 +55,6 @@
     <string name="detail_section_notes">Notes</string>
     <string name="detail_section_with">Dined with</string>
     <string name="detail_section_location">Location</string>
-
-    <!-- Map picker -->
-    <string name="map_picker_title">Tap the map to place a pin</string>
-    <string name="map_picker_use_location">Use my location</string>
-    <string name="map_picker_confirm">Use this pin</string>
-    <string name="map_picker_cancel">Cancel</string>
-    <string name="map_picker_no_key">Map unavailable — set MAPS_API_KEY in local.properties.</string>
 
     <!-- Permissions -->
     <string name="perm_camera_rationale">Camera access is needed to take a photo for this restaurant.</string>

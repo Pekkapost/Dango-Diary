@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -45,9 +44,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.android.gms.maps.model.LatLng
 import com.restauranttracker.R
 import com.restauranttracker.RestaurantApp
+import com.restauranttracker.ui.common.AddressAutocompleteField
 import com.restauranttracker.ui.common.CuisinePickerField
 import com.restauranttracker.ui.common.DatePickerField
 import com.restauranttracker.ui.common.PhotoGrid
@@ -66,7 +65,6 @@ fun RestaurantEditScreen(
         key = "edit-${restaurantId ?: "new"}",
     )
     val s by vm.state.collectAsStateWithLifecycle()
-    var showMapPicker by remember { mutableStateOf(false) }
     var photoMenuOpen by remember { mutableStateOf(false) }
     var pendingCameraPath by remember { mutableStateOf<String?>(null) }
 
@@ -171,14 +169,6 @@ fun RestaurantEditScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = s.companions,
-                onValueChange = vm::setCompanions,
-                label = { Text(stringResource(R.string.edit_field_companions)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -206,28 +196,28 @@ fun RestaurantEditScreen(
                 )
             }
 
-            OutlinedTextField(
-                value = s.addressText,
-                onValueChange = vm::setAddress,
-                label = { Text(stringResource(R.string.edit_field_address)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
+            AddressAutocompleteField(
+                label = stringResource(R.string.edit_field_address),
+                address = s.addressText,
+                onPlacePicked = { place -> vm.setPlace(place.address, place.latitude, place.longitude) },
+                placeholder = stringResource(R.string.edit_address_placeholder),
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { showMapPicker = true }) {
-                    Icon(Icons.Filled.Map, contentDescription = null)
-                    Text("  " + stringResource(R.string.edit_pick_on_map))
-                }
-                if (s.latitude != null && s.longitude != null) {
-                    OutlinedButton(onClick = { vm.setPin(null, null) }) {
-                        Text(stringResource(R.string.edit_clear_pin))
+            if (s.addressText.isNotBlank() || s.latitude != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { vm.clearLocation() }) {
+                        Text(stringResource(R.string.edit_clear_location))
                     }
                 }
             }
-            if (s.latitude != null && s.longitude != null) {
-                Text("Pin: ${"%.5f".format(s.latitude)}, ${"%.5f".format(s.longitude)}")
-            }
+
+            OutlinedTextField(
+                value = s.companions,
+                onValueChange = vm::setCompanions,
+                label = { Text(stringResource(R.string.edit_field_companions)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
 
             OutlinedTextField(
                 value = s.notes,
@@ -295,16 +285,4 @@ fun RestaurantEditScreen(
         }
     }
 
-    if (showMapPicker) {
-        MapPickerSheet(
-            initial = s.latitude?.let { lat ->
-                s.longitude?.let { lng -> LatLng(lat, lng) }
-            },
-            onDismiss = { showMapPicker = false },
-            onConfirm = { latLng ->
-                vm.setPin(latLng.latitude, latLng.longitude)
-                showMapPicker = false
-            },
-        )
-    }
 }
