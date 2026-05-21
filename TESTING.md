@@ -62,7 +62,7 @@ Expect 10–30 fps depending on your SSH latency. Mouse, keyboard, and (on scrcp
 
 ## What to test (matches the plan's verification steps)
 
-1. **Empty list renders** — app launches to "No restaurants yet. Tap + to add your first."
+1. **Empty list renders** — app launches to "No restaurants yet. Tap Add restaurant to add your first." Search with no matches reads "No restaurants match your search."
 2. **Add restaurant** — tap the FAB, fill in name + date + rating + companions + price + address, place a map pin, attach a photo, save. The list shows the new entry.
 3. **Detail** — tap the entry. All fields render, map is embedded read-only.
 4. **Edit** — change the rating, save, confirm list reflects the change.
