@@ -53,6 +53,7 @@ import com.restauranttracker.data.CuisineCatalog
 import com.restauranttracker.data.PhotoPaths
 import com.restauranttracker.data.Restaurant
 import com.restauranttracker.ui.common.RatingStars
+import com.restauranttracker.util.extractCity
 import com.restauranttracker.util.formatDate
 import com.restauranttracker.util.formatPrice
 import java.io.File
@@ -263,7 +264,7 @@ private fun RestaurantRow(restaurant: Restaurant, onClick: () -> Unit) {
                         )
                         val subtitle = listOfNotNull(
                             CuisineCatalog.labelFor(restaurant.cuisine),
-                            restaurant.addressText?.takeIf { it.isNotBlank() },
+                            extractCity(restaurant.addressText),
                         ).joinToString("  ·  ")
                         if (subtitle.isNotEmpty()) {
                             Text(

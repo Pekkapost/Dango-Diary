@@ -46,3 +46,16 @@ private fun pow10(n: Int): Double {
     repeat(n) { r *= 10 }
     return r
 }
+
+/**
+ * Best-effort city extraction from a free-form address. We don't have structured fields, so
+ * we lean on the convention "street, city, region+postcode[, country]": when there are 3+
+ * comma-separated parts, the second one is almost always the city. Otherwise fall back to
+ * the first non-empty part. Returns null for blank input.
+ */
+fun extractCity(addressText: String?): String? {
+    if (addressText.isNullOrBlank()) return null
+    val parts = addressText.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+    if (parts.isEmpty()) return null
+    return if (parts.size >= 3) parts[1] else parts[0]
+}

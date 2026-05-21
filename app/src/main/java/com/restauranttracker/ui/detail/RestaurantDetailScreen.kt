@@ -143,15 +143,6 @@ private fun DetailBody(restaurant: Restaurant, modifier: Modifier = Modifier) {
     }.joinToString("  ·  ")
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
-        if (photos.isNotEmpty()) {
-            PhotoGrid(
-                paths = photos,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp),
-            )
-        }
-
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -167,20 +158,6 @@ private fun DetailBody(restaurant: Restaurant, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-
-        if (restaurant.notes.isNotBlank()) {
-            HorizontalDivider()
-            DetailSection(title = stringResource(R.string.detail_section_notes)) {
-                Text(restaurant.notes, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-
-        if (restaurant.companions.isNotBlank()) {
-            HorizontalDivider()
-            DetailSection(title = stringResource(R.string.detail_section_with)) {
-                Text(restaurant.companions, style = MaterialTheme.typography.bodyMedium)
-            }
         }
 
         if (hasLocation) {
@@ -220,6 +197,30 @@ private fun DetailBody(restaurant: Restaurant, modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
+
+        if (restaurant.companions.isNotBlank()) {
+            HorizontalDivider()
+            DetailSection(title = stringResource(R.string.detail_section_with)) {
+                Text(restaurant.companions, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        if (restaurant.notes.isNotBlank()) {
+            HorizontalDivider()
+            DetailSection(title = stringResource(R.string.detail_section_notes)) {
+                Text(restaurant.notes, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        if (photos.isNotEmpty()) {
+            HorizontalDivider()
+            PhotoGrid(
+                paths = photos,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+            )
         }
     }
 }
