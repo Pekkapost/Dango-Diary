@@ -102,44 +102,66 @@ When you eventually sign a release build, come back here and add the release key
 
 Pick whichever is least painful:
 
-#### Option A — Android Studio (easiest, no terminal)
+#### Option A — Run `signingReport` from a terminal (recommended)
 
-If Android Studio is open with this project:
+Open a terminal inside the project. The fastest way from Android Studio: **Alt+F12** (or **View → Tool Windows → Terminal**) — it opens already positioned in your project directory. Then run the command for your shell:
 
-1. Right side of the IDE → click the **Gradle** tab (elephant icon)
-2. Drill down: `Restaurant-App` → `:app` → `Tasks` → `android` → double-click **signingReport**
-3. The Run/Build panel at the bottom prints:
-   ```
-   Variant: debug
-   Config: debug
-   ...
-   SHA1: 12:34:56:78:9A:BC:...:EF
-   ```
-4. Copy the SHA1 value (the colon-separated hex string).
+- **Windows PowerShell** (the IDE terminal defaults to this; prompt starts with `PS C:\...>`):
+  ```
+  .\gradlew signingReport
+  ```
+- **Windows Command Prompt** (prompt starts with `C:\...>`):
+  ```
+  gradlew.bat signingReport
+  ```
+- **macOS / Linux**:
+  ```
+  ./gradlew signingReport
+  ```
 
-#### Option B — Windows Command Prompt
-
-`keytool` lives inside the JDK that Android Studio bundles. Open Command Prompt (Start menu → type `cmd`) and paste:
-
-```
-"C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android | findstr SHA1
-```
-
-If that errors with "file not found," try replacing `jbr` with `jre` in the path. If both fail, use Option A.
-
-#### Option C — Windows PowerShell
+First run takes 30–60 seconds while Gradle warms up. Output includes a block like:
 
 ```
-& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android | Select-String SHA1
+Variant: debug
+Config: debug
+...
+SHA1: 12:34:56:78:9A:BC:...:EF
+SHA-256: ...
 ```
 
-#### Option D — macOS / Linux
+Copy the SHA1 value (the colon-separated hex string).
 
-```
-keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android | grep SHA1
-```
+#### Option B — Android Studio Gradle tool window
 
-If `~/.android/debug.keystore` doesn't exist yet, build the app once in Android Studio first — it generates the debug keystore on first build.
+If you prefer clicking to typing:
+
+1. **View → Tool Windows → Gradle** (the panel is hidden by default in recent Android Studio versions; it pins to the right edge)
+2. Expand `Restaurant-App` → `:app` → `Tasks` → `android` → double-click **signingReport**
+3. The Run/Build panel at the bottom prints the same SHA1 block as Option A
+
+If you expand **Tasks** and see only `other` (no `android` group), Android Studio is suppressing the task list for performance. Fix: **File → Settings → Experimental → Gradle** → uncheck **"Do not build Gradle task list during Gradle sync"** → resync.
+
+#### Option C — `keytool` direct (no project required)
+
+Useful if you don't have the project open. `keytool` lives inside the JDK that Android Studio bundles.
+
+- **Windows Command Prompt**:
+  ```
+  "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android | findstr SHA1
+  ```
+  If "file not found," try replacing `jbr` with `jre` in the path.
+
+- **Windows PowerShell**:
+  ```
+  & "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android | Select-String SHA1
+  ```
+
+- **macOS / Linux**:
+  ```
+  keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android | grep SHA1
+  ```
+
+If `~/.android/debug.keystore` (or its Windows equivalent at `%USERPROFILE%\.android\debug.keystore`) doesn't exist yet, build the app once in Android Studio first — it generates the debug keystore on first build.
 
 ## 10. Rebuild and confirm
 
