@@ -248,6 +248,15 @@ private fun RestaurantRow(restaurant: Restaurant, onClick: () -> Unit) {
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
+                if (!restaurant.addressText.isNullOrBlank()) {
+                    Text(
+                        text = restaurant.addressText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                }
                 Text(
                     text = formatDate(restaurant.visitedOn),
                     style = MaterialTheme.typography.bodySmall,

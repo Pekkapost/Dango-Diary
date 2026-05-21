@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Restaurant::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class RestaurantDatabase : RoomDatabase() {
@@ -15,13 +17,23 @@ abstract class RestaurantDatabase : RoomDatabase() {
     abstract fun restaurantDao(): RestaurantDao
 
     companion object {
-        // When a v2 ships, add a Migration here and pass it to addMigrations(...).
+        // v2 redefines `rating` as half-star units (0..10) instead of whole stars (0..5),
+        // so existing rows must be doubled to preserve their meaning.
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("UPDATE restaurants SET rating = rating * 2")
+            }
+        }
+
+        // When a v3 ships, add a Migration here and pass it to addMigrations(...).
         // Never use fallbackToDestructiveMigration — losing user data is not an upgrade path.
         fun build(context: Context): RestaurantDatabase =
             Room.databaseBuilder(
                 context.applicationContext,
                 RestaurantDatabase::class.java,
                 "restaurants.db",
-            ).build()
+            )
+                .addMigrations(MIGRATION_1_2)
+                .build()
     }
 }

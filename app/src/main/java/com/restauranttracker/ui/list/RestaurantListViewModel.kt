@@ -62,7 +62,7 @@ private fun applyFilters(all: List<Restaurant>, f: ListFilters): List<Restaurant
                 (r.addressText ?: "")).lowercase()
             if (!haystack.contains(q)) return@filter false
         }
-        if (r.rating < f.minRating) return@filter false
+        if (r.rating < f.minRating * 2) return@filter false
         if (f.onlyWithPhoto && PhotoPaths.decode(r.photoPathsJson).isEmpty()) return@filter false
         true
     }

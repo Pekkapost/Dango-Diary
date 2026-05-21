@@ -51,7 +51,6 @@
     <string name="detail_delete_confirm_cancel">Cancel</string>
     <string name="detail_with">With: %1$s</string>
     <string name="detail_price">Dish: %1$s</string>
-    <string name="detail_rating">Rating: %1$d / 5</string>
     <string name="detail_visited">Visited %1$s</string>
     <string name="detail_no_pin">No map pin set.</string>
 

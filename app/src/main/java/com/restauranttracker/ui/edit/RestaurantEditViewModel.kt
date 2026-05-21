@@ -130,7 +130,7 @@ class RestaurantEditViewModel(
         val s = _state.value
         val name = s.name.trim()
         val nameErr = if (name.isEmpty()) "edit_name_required" else null
-        val ratingErr = if (s.rating !in 1..5) "edit_rating_required" else null
+        val ratingErr = if (s.rating !in 1..10) "edit_rating_required" else null
         val priceCents: Long? = if (s.priceText.isBlank()) null
         else parsePriceInput(s.priceText, s.currencyCode)
         val priceErr = if (s.priceText.isNotBlank() && priceCents == null) "edit_price_invalid" else null

@@ -138,7 +138,6 @@ private fun DetailBody(restaurant: Restaurant, modifier: Modifier = Modifier) {
         Text(restaurant.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(stringResource(R.string.detail_visited, formatDate(restaurant.visitedOn)))
         RatingStars(rating = restaurant.rating)
-        Text(stringResource(R.string.detail_rating, restaurant.rating))
 
         if (restaurant.dishPriceCents != null) {
             Text(
