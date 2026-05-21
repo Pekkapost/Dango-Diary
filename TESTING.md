@@ -72,9 +72,9 @@ Expect 10–30 fps depending on your SSH latency. Mouse, keyboard, and (on scrcp
 
 ## Caveats
 
-- **Map tiles** will render gray without a Maps SDK API key in [local.properties](local.properties). Pin coordinates still save/load correctly. Add `MAPS_API_KEY=…` and rebuild to fix.
+- **Map tiles** on the detail screen will render gray without a Maps SDK API key in [local.properties](local.properties). Pin coordinates still save/load correctly. Add `MAPS_API_KEY=…` and rebuild to fix. Full GCP walkthrough in [CLOUD-SETUP.md](CLOUD-SETUP.md).
+- **Address autocomplete** needs **both** Places APIs enabled on the same key (the new one for programmatic calls, the legacy one because the fullscreen autocomplete widget still hits it under the hood), plus the emulator's debug SHA-1 added to the key's Android-app restriction. Without that the autocomplete activity closes immediately on tap — check Logcat for `tag:AddressAutocomplete` to confirm. Full setup in [CLOUD-SETUP.md](CLOUD-SETUP.md).
 - **Camera capture** has no real camera on the emulator — it uses a synthetic test image. The gallery picker / `Pick photo from gallery` flow is the realistic path on the emulator.
-- **Location "Use my location"** in the map picker returns null on a fresh emulator unless you push a mock location via `adb emu geo fix <lng> <lat>`.
 - **scrcpy 1.x clipboard warning** in the server logs is harmless — affects clipboard sync only, not display or input. scrcpy 2.x on your local side avoids it.
 
 ## Useful adb commands (run on server)

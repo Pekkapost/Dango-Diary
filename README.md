@@ -64,7 +64,7 @@ MAPS_API_KEY=
 ```
 
 - `sdk.dir` — the SDK path you copied in step 1. **Use double backslashes** (`\\`) or forward slashes (`/`); a single `\` will be read as a Java escape.
-- `MAPS_API_KEY` — leave empty for now. Map tiles render gray without one, but the rest of the app (including saving pin coordinates) works fine. To enable real tiles, create a Maps SDK for Android key at <https://console.cloud.google.com/google/maps-apis> and paste it after the `=`.
+- `MAPS_API_KEY` — leave empty for now. Map tiles render gray and address autocomplete is disabled without one, but the rest of the app (including saved entries) works fine. The full Google Cloud walkthrough — creating the key, enabling Maps SDK plus both Places APIs (new + legacy, the autocomplete widget needs both), and setting cost guards so you can't be charged — is in **[CLOUD-SETUP.md](CLOUD-SETUP.md)**.
 
 ### **4. Open the project in Android Studio**
 
@@ -88,7 +88,8 @@ Tap **+ Add restaurant**, fill in the form, tap **Save**. The entry appears in t
 
 Things to know on the emulator:
 - **Camera** uses a synthetic test image, not a real photo. Use **Choose from gallery** for realistic photo testing — drag a JPG from your desktop onto the emulator window to add it to the gallery first.
-- **Map picker** centers on (0, 0) until you tap somewhere on the map or use the location button. To set a mock location, open the emulator's three-dot menu → Location → set lat/lng → Set Location.
+- **Address autocomplete** needs the Places API enabled on your key plus the emulator's debug SHA-1 added to the key restriction (see [CLOUD-SETUP.md](CLOUD-SETUP.md) step 9). Without that the autocomplete activity closes immediately on tap.
+- **Detail map preview** centers on the saved pin. If you haven't picked an address yet, the map section is hidden — there's no separate map picker in the edit flow.
 - **Hot reload** — when you change Kotlin code, just press ▶ again; Android Studio rebuilds and reinstalls in a few seconds.
 
 ## Setup (command line, without Android Studio)
