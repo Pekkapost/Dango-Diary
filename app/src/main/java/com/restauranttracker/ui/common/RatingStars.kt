@@ -9,13 +9,16 @@ import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+
+// Conventional rating-amber. Deliberately fixed rather than themed: users expect star ratings
+// to read as warm gold across apps, and dynamic-color tints can land on anything from pink to teal.
+private val RatingAmber = Color(0xFFFFB300)
 
 /**
  * Rating in half-star units (0..maxStars*2). For example, 7 renders as 3.5 stars.
@@ -27,7 +30,7 @@ fun RatingStars(
     onRatingChange: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
     maxStars: Int = 5,
-    tint: Color = MaterialTheme.colorScheme.primary,
+    tint: Color = RatingAmber,
 ) {
     Row(modifier = modifier) {
         for (i in 1..maxStars) {

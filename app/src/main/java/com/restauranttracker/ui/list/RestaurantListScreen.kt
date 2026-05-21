@@ -1,5 +1,6 @@
 package com.restauranttracker.ui.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -239,34 +241,50 @@ private fun RestaurantRow(restaurant: Restaurant, onClick: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                )
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = restaurant.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                if (!restaurant.addressText.isNullOrBlank()) {
-                    Text(
-                        text = restaurant.addressText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Restaurant,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Text(
-                    text = formatDate(restaurant.visitedOn),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                RatingStars(rating = restaurant.rating)
-                if (restaurant.dishPriceCents != null) {
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = restaurant.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        if (!restaurant.addressText.isNullOrBlank()) {
+                            Text(
+                                text = restaurant.addressText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
                     Text(
-                        text = formatPrice(restaurant.dishPriceCents, restaurant.currencyCode),
-                        style = MaterialTheme.typography.bodySmall,
+                        text = formatDate(restaurant.visitedOn),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RatingStars(rating = restaurant.rating, modifier = Modifier.weight(1f))
+                    if (restaurant.dishPriceCents != null) {
+                        Text(
+                            text = formatPrice(restaurant.dishPriceCents, restaurant.currencyCode),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
