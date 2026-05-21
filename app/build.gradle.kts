@@ -18,11 +18,11 @@ val mapsApiKey: String = run {
 }
 
 android {
-    namespace = "com.restauranttracker"
+    namespace = "com.dangodiary"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.restauranttracker"
+        applicationId = "com.dangodiary"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -86,9 +86,7 @@ dependencies {
 
     implementation(libs.google.maps.compose)
     implementation(libs.google.play.services.maps)
-    implementation(libs.google.play.services.location)
     implementation(libs.google.places)
-    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.kotlinx.serialization.json)
 }

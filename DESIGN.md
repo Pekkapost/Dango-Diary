@@ -1,15 +1,13 @@
 # Design Document — Conventions & Style
 
-A Kotlin/Android adaptation of [/home/amd/PekkaBot2/DESIGN.md](../PekkaBot2/DESIGN.md). The driving idea is identical: **make it easy for a future reader to walk through the codebase top-to-bottom and never be surprised.** Surprise costs more than verbosity.
-
-Where the source doc's Python-specific mechanics (PEP 8 / `ruff` / `__file__` anchoring) don't apply, the principle they express still does. This file captures the Kotlin equivalents only — refer back to the Python doc for the full underlying rationale.
+The driving idea: **make it easy for a future reader to walk through the codebase top-to-bottom and never be surprised.** Surprise costs more than verbosity.
 
 ---
 
 ## 1. Project layout
 
 ```
-Resturant-App/
+Dango-Diary/
 ├── README.md
 ├── DESIGN.md
 ├── settings.gradle.kts
@@ -20,8 +18,8 @@ Resturant-App/
     ├── build.gradle.kts
     └── src/main/
         ├── AndroidManifest.xml
-        ├── java/com/restauranttracker/
-        │   ├── RestaurantApp.kt       # Application — owns DB + PhotoStorage singletons
+        ├── java/com/dangodiary/
+        │   ├── DangoDiaryApp.kt       # Application — owns DB + PhotoStorage singletons
         │   ├── MainActivity.kt        # Single activity, hosts the Compose nav graph
         │   ├── data/                  # Room entity, DAO, Database, JSON converters
         │   ├── ui/
@@ -41,14 +39,14 @@ Why: A single Gradle module keeps build times minimal until splitting is justifi
 
 | Identifier kind | Convention | Example |
 |---|---|---|
-| Class / object / interface / file | `PascalCase` | `RestaurantDao`, `RestaurantDao.kt` |
+| Class / object / interface / file | `PascalCase` | `EntryDao`, `EntryDao.kt` |
 | Function / property / parameter | `camelCase` | `loadFrom`, `dishPriceCents` |
 | Const val (top-level / companion) | `UPPER_SNAKE_CASE` | `PHOTOS_DIR`, `TAG` |
-| Composable function | `PascalCase` | `RestaurantListScreen` |
+| Composable function | `PascalCase` | `EntryListScreen` |
 | Test / preview function | `PascalCase` (Compose) or `camelCase` (JUnit) | |
 
 - One top-level class per file; filename matches the class.
-- Loop / lambda variables get a descriptive name (`restaurant`, `path`) unless the lambda body is one line and the scope is trivial — then `it` is fine.
+- Loop / lambda variables get a descriptive name (`entry`, `path`) unless the lambda body is one line and the scope is trivial — then `it` is fine.
 - Never single-letter variables except `i` in tight loops; even there, `idx` is preferable.
 
 ---
@@ -81,7 +79,7 @@ KDoc (`/** … */`) goes on non-trivial public functions/classes. Single-line su
 
 ## 5. State & dependency injection
 
-- App-wide singletons (Room DB, `PhotoStorage`) live on the `Application` subclass [`RestaurantApp`](app/src/main/java/com/restauranttracker/RestaurantApp.kt). No DI framework. Re-evaluate if the graph grows beyond a handful of nodes.
+- App-wide singletons (Room DB, `PhotoStorage`) live on the `Application` subclass [`DangoDiaryApp`](app/src/main/java/com/dangodiary/DangoDiaryApp.kt). No DI framework. Re-evaluate if the graph grows beyond a handful of nodes.
 - ViewModels receive their dependencies via a `ViewModelProvider.Factory` defined in a `companion object` of the ViewModel itself. The screen Composable obtains the VM via `viewModel(factory = …)`.
 - UI state is `StateFlow<…>` exposed by the ViewModel and collected in Composables via `collectAsStateWithLifecycle()`.
 - No `LiveData`, no `GlobalScope`, no `runBlocking` on the main thread.
@@ -137,4 +135,4 @@ Log.i(TAG, "imported photo at $path")
 
 ## 11. When to break these rules
 
-Same as the Python doc: when a specific reader experience benefits, when a framework forces an idiom, or when strict adherence would obscure intent. The goal is to be **predictable** — predictability beats personal preference.
+When a specific reader experience benefits, when a framework forces an idiom, or when strict adherence would obscure intent. The goal is to be **predictable** — predictability beats personal preference.

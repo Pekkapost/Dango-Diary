@@ -1,22 +1,24 @@
-# Restaurant Tracker
+# Dango Diary
 
 <h4 align="center">A local-only Android app for tracking the restaurants you have visited.</h4>
 
 ## Layout
 
 ```
-Restaurant-App/
+Dango-Diary/
 ├── app/                            # Single Gradle module
 │   └── src/main/
 │       ├── AndroidManifest.xml
-│       ├── java/com/restauranttracker/
-│       │   ├── RestaurantApp.kt    # Application — owns DB + PhotoStorage singletons
+│       ├── java/com/dangodiary/
+│       │   ├── DangoDiaryApp.kt    # Application — owns DB + PhotoStorage singletons
 │       │   ├── MainActivity.kt     # Single activity, hosts the Compose nav graph
 │       │   ├── data/               # Room entity, DAO, Database, photo-paths JSON
 │       │   ├── ui/                 # theme/, nav/, list/, detail/, edit/, common/
 │       │   └── util/               # PhotoStorage, Formatting
 │       └── res/                    # strings, themes, drawables
-├── DESIGN.md                       # Project conventions (Kotlin adaptation)
+├── DESIGN.md                       # Project conventions and style
+├── CLOUD-SETUP.md                  # Step-by-step Google Cloud setup (key, APIs, cost guards)
+├── TESTING.md                      # Headless emulator + remote scrcpy workflow
 └── gradle/libs.versions.toml       # Single source of dependency versions
 ```
 
@@ -29,9 +31,10 @@ Restaurant-App/
 | [Room](https://developer.android.com/training/data-storage/room) | 2.6.1 | On-device database |
 | [Navigation-Compose](https://developer.android.com/jetpack/compose/navigation) | 2.8.3 | Screen routing |
 | [Coil](https://coil-kt.github.io/coil/) | 2.7.0 | Image loading from local files |
-| [Maps Compose](https://github.com/googlemaps/android-maps-compose) | 4.4.1 | Embedded map + pin picker |
+| [Maps Compose](https://github.com/googlemaps/android-maps-compose) | 4.4.1 | Embedded read-only map on the detail screen |
+| [Places SDK](https://developers.google.com/maps/documentation/places/android-sdk) | 4.1.0 | Address autocomplete in the edit form |
 
-Entry point is [MainActivity.kt](app/src/main/java/com/restauranttracker/MainActivity.kt). All library code lives under `app/src/main/java/com/restauranttracker/`.
+Entry point is [MainActivity.kt](app/src/main/java/com/dangodiary/MainActivity.kt). All library code lives under `app/src/main/java/com/dangodiary/`.
 
 ## Setup (Windows)
 
@@ -48,8 +51,8 @@ After install, note where Android Studio put the SDK. Open **Settings → Langua
 ### **2. Get the code**
 
 ```powershell
-git clone https://github.com/Pekkapost/Restaurant-App.git
-cd Restaurant-App
+git clone https://github.com/Pekkapost/Dango-Diary.git
+cd Dango-Diary
 ```
 
 If you don't have git, download the repo as a ZIP and unzip it. Then `cd` into the folder in PowerShell.
@@ -68,7 +71,7 @@ MAPS_API_KEY=
 
 ### **4. Open the project in Android Studio**
 
-`File → Open → ` select the **`Restaurant-App`** folder (not a subfolder). Android Studio runs a Gradle sync that downloads ~1 GB of dependencies the first time — takes 2–5 minutes. Wait until the bottom status bar reads "Gradle sync finished".
+`File → Open → ` select the **`Dango-Diary`** folder (not a subfolder). Android Studio runs a Gradle sync that downloads ~1 GB of dependencies the first time — takes 2–5 minutes. Wait until the bottom status bar reads "Gradle sync finished".
 
 If the sync fails complaining about an SDK component, click the offered "Install missing platform/build-tools" link.
 
@@ -114,51 +117,51 @@ If you'd rather not install Android Studio, you need JDK 17 + the Android comman
 6. From the project folder, with the emulator running:
    ```powershell
    .\gradlew.bat :app:installDebug
-   adb shell am start -n com.restauranttracker/.MainActivity
+   adb shell am start -n com.dangodiary/.MainActivity
    ```
 
 ## Logs
 
-In Android Studio, the **Logcat** panel at the bottom shows live device output. Filter for `com.restauranttracker` to isolate the app.
+In Android Studio, the **Logcat** panel at the bottom shows live device output. Filter for `com.dangodiary` to isolate the app.
 
 From the command line:
 
 ```powershell
-adb logcat -s RestaurantApp PhotoStorage
+adb logcat -s DangoDiaryApp PhotoStorage
 ```
 
 ## Architecture
 
 | Module | Description |
 |---|---|
-| [app/build.gradle.kts](app/build.gradle.kts) | Module config — pulls `MAPS_API_KEY` from `local.properties` into the manifest. |
-| [RestaurantApp.kt](app/src/main/java/com/restauranttracker/RestaurantApp.kt) | Application class. Lazy-initializes the Room DB and PhotoStorage. |
-| [MainActivity.kt](app/src/main/java/com/restauranttracker/MainActivity.kt) | Single activity. Sets the Compose content and theme. |
-| [data/](app/src/main/java/com/restauranttracker/data/) | `Restaurant` entity, `RestaurantDao` (Flow + suspend), `RestaurantDatabase`, JSON helpers for photo paths. |
-| [ui/list/](app/src/main/java/com/restauranttracker/ui/list/) | List screen, search/filter/sort ViewModel. |
-| [ui/detail/](app/src/main/java/com/restauranttracker/ui/detail/) | Detail screen with embedded read-only map + delete flow. |
-| [ui/edit/](app/src/main/java/com/restauranttracker/ui/edit/) | New/edit form, map picker, photo capture/import. |
-| [ui/common/](app/src/main/java/com/restauranttracker/ui/common/) | Reusable composables (`RatingStars`, `DatePickerField`, `PhotoGrid`). |
-| [util/PhotoStorage.kt](app/src/main/java/com/restauranttracker/util/PhotoStorage.kt) | Copies captured/imported photos into `filesDir/photos/` and returns stable paths. |
-| [util/Formatting.kt](app/src/main/java/com/restauranttracker/util/Formatting.kt) | Date and currency formatters. |
+| [app/build.gradle.kts](app/build.gradle.kts) | Module config — pulls `MAPS_API_KEY` from `local.properties` into the manifest and into `BuildConfig` (for Places SDK init). |
+| [DangoDiaryApp.kt](app/src/main/java/com/dangodiary/DangoDiaryApp.kt) | Application class. Lazy-initializes the Room DB and PhotoStorage, and initializes the Places SDK. |
+| [MainActivity.kt](app/src/main/java/com/dangodiary/MainActivity.kt) | Single activity. Sets the Compose content and theme. |
+| [data/](app/src/main/java/com/dangodiary/data/) | `Entry` entity, `EntryDao` (Flow + suspend), `DiaryDatabase`, the cuisine catalog, and JSON helpers for photo paths. |
+| [ui/list/](app/src/main/java/com/dangodiary/ui/list/) | List screen, search/filter/sort ViewModel. |
+| [ui/detail/](app/src/main/java/com/dangodiary/ui/detail/) | Detail screen with section layout (location → dined with → notes → photos) + delete flow. |
+| [ui/edit/](app/src/main/java/com/dangodiary/ui/edit/) | New/edit form, address autocomplete, photo capture/import. |
+| [ui/common/](app/src/main/java/com/dangodiary/ui/common/) | Reusable composables (`RatingStars`, `DatePickerField`, `CuisinePickerField`, `AddressAutocompleteField`, `PhotoGrid`). |
+| [util/PhotoStorage.kt](app/src/main/java/com/dangodiary/util/PhotoStorage.kt) | Copies captured/imported photos into `filesDir/photos/` and returns stable paths. |
+| [util/Formatting.kt](app/src/main/java/com/dangodiary/util/Formatting.kt) | Date, currency, and city-extraction formatters. |
 
 ## Features
 
 | Surface | Description |
 |---|---|
-| **List screen** | All restaurants you've recorded, with text search, sort (recency / rating / name / price), and filter chips (min rating, has-photo). |
-| **Add/edit form** | Name, date visited, 1–5 star rating, who you went with, dish price + currency, notes, address text, optional map pin, photos from camera or gallery. |
-| **Detail screen** | All fields, embedded read-only map if a pin is set, "Open in Maps" intent, edit, delete. |
+| **List screen** | All entries you've recorded, with text search, sort (recency / rating / name / price), and filter chips (min rating, has-photo). Each row shows photo, name, cuisine + city, half-star rating, date, and dish price. |
+| **Add/edit form** | Name, cuisine (grouped picker), date visited, half-star rating (1–5 in 0.5 increments), dish price + currency, address (Google Places autocomplete — sets address and pin together), who you went with, notes, photos from camera or gallery. |
+| **Detail screen** | Header with name + stars + cuisine·date·price subtitle, then sections: Location (address + embedded read-only map + "Open in Maps"), Dined with, Notes, and photos at the bottom. Sections only appear when they have content. |
 
-All data is stored locally in a Room database at the app's private data directory. Photos are copied into the app's `filesDir/photos/`. Nothing leaves the device.
+All data is stored locally in a Room database at the app's private data directory. Photos are copied into the app's `filesDir/photos/`. Nothing leaves the device except Places autocomplete queries while you're typing an address.
 
 ## Limitations
 
-- Requires a Google Maps SDK key to render map tiles. Without one, the map area is blank but pin coordinates still save.
+- Requires a Google Maps SDK key for map tiles **and** both Places APIs (new + legacy) for address autocomplete. Without the key, the address field is unusable and the detail-screen map is blank — see [CLOUD-SETUP.md](CLOUD-SETUP.md).
 - No cloud sync, no export/import. Backups are the user's responsibility (Android's auto-backup will capture the DB and photos).
-- No reverse geocoding — the address text field is whatever you type.
-- Map picker centers on (0, 0) when no initial pin is set; tap "Use my location" (granting location permission) to recenter.
+- No way to enter a location for a place that isn't in Google's index (e.g. a friend's house, a popup) — autocomplete is the only address input path.
 - Currency is per-row and free-text; no validation beyond "is this a known ISO 4217 code". Unknown codes fall back to the device default at format time.
+- Cuisine catalog is hardcoded in [Cuisine.kt](app/src/main/java/com/dangodiary/data/Cuisine.kt); there's no UI to add custom cuisines.
 
 ## Authors
 

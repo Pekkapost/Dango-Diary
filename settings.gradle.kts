@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RestaurantTracker"
+rootProject.name = "DangoDiary"
 include(":app")

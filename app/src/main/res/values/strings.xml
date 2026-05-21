@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Restaurant Tracker</string>
+    <string name="app_name">Dango Diary</string>
 
     <!-- List screen -->
     <string name="list_title">Restaurants</string>
@@ -14,9 +14,11 @@
     <string name="list_sort_name">Name (A–Z)</string>
     <string name="list_sort_price">Price (low to high)</string>
     <string name="list_filter_min_rating">Min rating: %1$d★</string>
+    <string name="list_filter_any_rating">Any rating</string>
     <string name="list_filter_has_photo">Has photo</string>
     <string name="list_filter_clear">Clear filters</string>
     <string name="action_add">Add restaurant</string>
+    <string name="action_back">Back</string>
 
     <!-- Edit screen -->
     <string name="edit_title_new">New restaurant</string>
@@ -55,8 +57,4 @@
     <string name="detail_section_notes">Notes</string>
     <string name="detail_section_with">Dined with</string>
     <string name="detail_section_location">Location</string>
-
-    <!-- Permissions -->
-    <string name="perm_camera_rationale">Camera access is needed to take a photo for this restaurant.</string>
-    <string name="perm_location_rationale">Location access is needed to center the map on your current position.</string>
 </resources>

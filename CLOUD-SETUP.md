@@ -23,7 +23,7 @@ The combination makes a surprise bill essentially impossible at personal-use sca
 ## 2. Create a new project
 
 - Top bar, project selector (left of the search box) → **New Project**
-- Project name: `restaurant-app` (or whatever)
+- Project name: `dango-diary` (or whatever)
 - Organization/Location: leave at "No organization" for a personal account
 - Click **Create**
 - Wait ~10 seconds for it to provision, then make sure the top-bar selector switches to it (sometimes you have to click in and pick it manually)
@@ -87,7 +87,7 @@ Quotas can take a few minutes to apply.
 ## 8. Set a $1 budget alert
 
 - Left sidebar → **Billing → Budgets & alerts → Create budget**
-- Name: `restaurant-app-watch`
+- Name: `dango-diary-watch`
 - Scope: leave at default (your project)
 - Amount → Target amount: `1` USD
 - Next → Actions: check **Email alerts to billing admins and users**
@@ -101,7 +101,7 @@ This won't *stop* spending, but it tells you within a day if something is wrong.
 Back to the Credentials tab from step 5 (or **APIs & Services → Credentials** → click your key name).
 
 - **Application restrictions** → **Android apps** → **Add an item**:
-  - Package name: `com.restauranttracker`
+  - Package name: `com.dangodiary`
   - SHA-1: get it via one of the three methods below
 - **API restrictions** → **Restrict key** → in the dropdown check **only**:
   - Maps SDK for Android
@@ -149,7 +149,7 @@ Copy the SHA1 value (the colon-separated hex string).
 If you prefer clicking to typing:
 
 1. **View → Tool Windows → Gradle** (the panel is hidden by default in recent Android Studio versions; it pins to the right edge)
-2. Expand `Restaurant-App` → `:app` → `Tasks` → `android` → double-click **signingReport**
+2. Expand `Dango-Diary` → `:app` → `Tasks` → `android` → double-click **signingReport**
 3. The Run/Build panel at the bottom prints the same SHA1 block as Option A
 
 If you expand **Tasks** and see only `other` (no `android` group), Android Studio is suppressing the task list for performance. Fix: **File → Settings → Experimental → Gradle** → uncheck **"Do not build Gradle task list during Gradle sync"** → resync.

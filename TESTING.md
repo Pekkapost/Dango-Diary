@@ -68,7 +68,7 @@ Expect 10–30 fps depending on your SSH latency. Mouse, keyboard, and (on scrcp
 4. **Edit** — change the rating, save, confirm list reflects the change.
 5. **Search / sort / filter** — add a second restaurant, search by name, sort by rating, filter by min-rating.
 6. **Delete** — confirm delete dialog, row disappears from list.
-7. **Process death** — `adb shell am force-stop com.restauranttracker`, relaunch — data still there.
+7. **Process death** — `adb shell am force-stop com.dangodiary`, relaunch — data still there.
 
 ## Caveats
 
@@ -81,10 +81,10 @@ Expect 10–30 fps depending on your SSH latency. Mouse, keyboard, and (on scrcp
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk   # reinstall after rebuild
-adb shell am start -n com.restauranttracker/.MainActivity   # launch
-adb shell am force-stop com.restauranttracker               # kill
+adb shell am start -n com.dangodiary/.MainActivity   # launch
+adb shell am force-stop com.dangodiary               # kill
 adb exec-out screencap -p > shot.png                        # one-off screenshot
-adb logcat -s 'com.restauranttracker:V' '*:E'               # app + errors
+adb logcat -s 'com.dangodiary:V' '*:E'               # app + errors
 adb emu kill                                                # stop the emulator cleanly
 ```
 
