@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -36,8 +38,9 @@ fun DatePickerField(
             .fillMaxWidth()
             .clickable { open = true },
     ) {
-        // A read-only field is the cleanest visual; we forward all clicks via the Box wrapper
-        // because the TextField swallows them otherwise.
+        // A disabled field lets the outer Box catch the click (an enabled TextField would
+        // swallow it and try to open the keyboard). The default disabled colors grey the
+        // field out, so we override them to match the look of an active input.
         OutlinedTextField(
             value = formatDate(epochDay),
             onValueChange = {},
@@ -45,6 +48,11 @@ fun DatePickerField(
             enabled = false,
             label = { Text(label) },
             modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
         )
     }
 
