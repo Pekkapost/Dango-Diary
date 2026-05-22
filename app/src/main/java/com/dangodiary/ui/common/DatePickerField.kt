@@ -47,6 +47,10 @@ fun DatePickerField(
             readOnly = true,
             enabled = false,
             label = { Text(label) },
+            // Match the cuisine picker's single-line behaviour so the paired row stays at a
+            // uniform height. Current MEDIUM date format fits comfortably, but locks the
+            // contract in case a longer format is ever used.
+            singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,

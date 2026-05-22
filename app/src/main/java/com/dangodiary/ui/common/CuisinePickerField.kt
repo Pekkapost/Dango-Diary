@@ -57,6 +57,11 @@ fun CuisinePickerField(
                 trailingIcon = {
                     Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
                 },
+                // Long cuisine labels ("Mediterranean", "Vietnamese", ...) would otherwise
+                // wrap to two lines on the narrow weight(1) cell next to the date picker,
+                // making the field grow taller than its sibling. singleLine clips instead of
+                // wraps — value gets cut at the right edge if it doesn't fit.
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,

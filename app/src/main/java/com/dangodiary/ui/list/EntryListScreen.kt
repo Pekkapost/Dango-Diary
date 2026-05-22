@@ -204,9 +204,15 @@ fun EntryListScreen(
                 }
             } else {
                 LazyColumn(
+                    // Bottom inset clears the ExtendedFloatingActionButton (≈56 dp tall + a
+                    // 16 dp margin from the screen edge) plus a small breathing gap so the
+                    // last entry can scroll up above the FAB rather than living underneath
+                    // it. Top stays at the same 8 dp the other inset used.
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        horizontal = 16.dp,
-                        vertical = 8.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 96.dp,
                     ),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
