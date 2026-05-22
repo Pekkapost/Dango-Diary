@@ -48,6 +48,8 @@
     <string name="edit_reorder_photo">Drag to reorder photo</string>
     <string name="edit_list_edit">Edit</string>
     <string name="edit_list_done">Done</string>
+    <string name="edit_legacy_button">Legacy</string>
+    <string name="list_legacy_badge">Legacy</string>
     <string name="edit_field_photo_caption">Caption (optional)</string>
     <string name="edit_remove_photo">Remove photo</string>
 

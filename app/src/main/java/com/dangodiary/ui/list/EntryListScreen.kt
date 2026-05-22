@@ -73,6 +73,7 @@ import com.dangodiary.data.CuisineGroup
 import com.dangodiary.data.Dishes
 import com.dangodiary.data.Entry
 import com.dangodiary.data.Photos
+import com.dangodiary.ui.common.LegacyBadge
 import com.dangodiary.ui.common.RatingStars
 import com.dangodiary.util.extractCity
 import com.dangodiary.util.formatDate
@@ -551,11 +552,16 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                             )
                         }
                     }
-                    Text(
-                        text = formatDate(entry.visitedOn),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = formatDate(entry.visitedOn),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (entry.isLegacy) {
+                            LegacyBadge(modifier = Modifier.padding(top = 2.dp))
+                        }
+                    }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingStars(rating = entry.rating, modifier = Modifier.weight(1f))

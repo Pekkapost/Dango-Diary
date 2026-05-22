@@ -28,6 +28,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +63,7 @@ import com.dangodiary.R
 import com.dangodiary.data.Photo
 import com.dangodiary.ui.common.CuisinePickerField
 import com.dangodiary.ui.common.DatePickerField
+import com.dangodiary.ui.common.LegacyBadgeBg
 import com.dangodiary.ui.common.RatingStars
 import com.dangodiary.ui.common.RestaurantNameField
 import sh.calvin.reorderable.ReorderableColumn
@@ -262,6 +265,19 @@ fun EntryEditScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp),
+            )
+
+            // Per-entry "Legacy" tag. Toggles on/off; when on, the list row gets a small
+            // brown badge under the date. Background colour stays brown regardless of the
+            // active app theme so the tag reads consistently.
+            FilterChip(
+                selected = s.isLegacy,
+                onClick = { vm.setLegacy(!s.isLegacy) },
+                label = { Text(stringResource(R.string.edit_legacy_button)) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = LegacyBadgeBg,
+                    selectedLabelColor = Color.White,
+                ),
             )
 
             // -----------------------------------------------------------------

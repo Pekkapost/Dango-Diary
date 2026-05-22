@@ -38,6 +38,12 @@ data class Entry(
     @ColumnInfo(name = "photo_paths_json")
     val photoPathsJson: String = "[]",
 
+    /** Backfilled / pre-app entries the user wants visually marked. Surfaced as a small
+     *  brown "Legacy" badge on the list row. Toggled per-entry via the Legacy chip on the
+     *  edit form. */
+    @ColumnInfo(name = "is_legacy")
+    val isLegacy: Boolean = false,
+
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),
 )

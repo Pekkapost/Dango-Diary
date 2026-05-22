@@ -59,6 +59,7 @@ data class EditState(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val photos: List<Photo> = emptyList(),
+    val isLegacy: Boolean = false,
     val nameError: Boolean = false,
     val ratingError: Boolean = false,
     val loading: Boolean = true,
@@ -126,6 +127,7 @@ class EntryEditViewModel(
                 latitude = entry.latitude,
                 longitude = entry.longitude,
                 photos = Photos.decode(entry.photoPathsJson),
+                isLegacy = entry.isLegacy,
                 loading = false,
             )
         }
@@ -137,6 +139,7 @@ class EntryEditViewModel(
     fun setCuisine(v: String?) = _state.update { it.copy(cuisine = v) }
     fun setNotes(v: String) = _state.update { it.copy(notes = v) }
     fun setCompanions(v: String) = _state.update { it.copy(companions = v) }
+    fun setLegacy(v: Boolean) = _state.update { it.copy(isLegacy = v) }
 
     fun setDishName(index: Int, v: String) = updateDish(index) { it.copy(name = v) }
     fun setDishPrice(index: Int, v: String) = updateDish(index) {
@@ -278,6 +281,7 @@ class EntryEditViewModel(
             latitude = s.latitude,
             longitude = s.longitude,
             photoPathsJson = Photos.encode(s.photos.map { it.copy(caption = it.caption.trim()) }),
+            isLegacy = s.isLegacy,
         )
 
         viewModelScope.launch {

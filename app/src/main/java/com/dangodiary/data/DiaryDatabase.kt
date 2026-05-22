@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Entry::class],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class DiaryDatabase : RoomDatabase() {
@@ -92,6 +92,13 @@ abstract class DiaryDatabase : RoomDatabase() {
             }
         }
 
+        // v4 -> v5: add the `is_legacy` flag for the user's back-fill / pre-app entries.
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE entries ADD COLUMN is_legacy INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         // Never use fallbackToDestructiveMigration — losing user data is not an upgrade path.
         fun build(context: Context): DiaryDatabase =
             Room.databaseBuilder(
@@ -99,7 +106,7 @@ abstract class DiaryDatabase : RoomDatabase() {
                 DiaryDatabase::class.java,
                 "diary.db",
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
     }
 }
