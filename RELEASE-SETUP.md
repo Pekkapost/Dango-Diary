@@ -1,15 +1,17 @@
-# Release Build Setup
+# Release Build Setup (Windows)
 
 One-time setup for building signed release APKs you can install on a personal Android phone and persist data across updates (same signing key = same Android app identity, so every reinstall keeps your existing entries, settings, theme, and photos).
 
+Commands below assume **PowerShell** in the project root. They work in `cmd` too unless noted.
+
 The build is already wired for this — `app/build.gradle.kts` picks up a release signing config when a `keystore.properties` file exists in the repo root. You just need to generate the keystore, fill in the credentials file, register the keystore's fingerprint with Google Cloud, and back it up.
 
-The full Google Cloud key + APIs setup lives in [CLOUD-SETUP.md](CLOUD-SETUP.md); that needs to be done before this. Both `local.properties` (containing `MAPS_API_KEY`) and `keystore.properties` (containing the release-signing credentials) must exist on the build machine.
+The full Google Cloud key + APIs setup lives in [CLOUD-SETUP.md](CLOUD-SETUP.md); that needs to be done before this. Both `local.properties` (containing `MAPS_API_KEY`) and `keystore.properties` (containing the release-signing credentials) must exist in the project root.
 
 ## 1. Pull the latest
 
-```bash
-cd /path/to/Dango-Diary
+```powershell
+cd C:\path\to\Dango-Diary
 git pull
 ```
 
@@ -17,9 +19,17 @@ Make sure the repo includes `keystore.properties.example` in the root — that's
 
 ## 2. Generate the release keystore
 
-```bash
-keytool -genkey -v -keystore release.keystore -alias dangodiary \
+```powershell
+keytool -genkey -v -keystore release.keystore -alias dangodiary `
   -keyalg RSA -keysize 2048 -validity 36500
+```
+
+(The trailing backtick `` ` `` is PowerShell's line continuation. If you'd rather just type it on one line, drop the backtick and the newline.)
+
+If `keytool` isn't on your PATH, use the one bundled with Android Studio's JBR:
+
+```powershell
+& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkey -v -keystore release.keystore -alias dangodiary -keyalg RSA -keysize 2048 -validity 36500
 ```
 
 `-validity 36500` (≈100 years) means you won't have to deal with key expiry. Default 10000 (~27 years) is fine too; longer is just easier to forget about.
@@ -35,17 +45,17 @@ Prompts, in order:
 
 You'll end up with `release.keystore` in the repo root (~2.5 KB). It's already gitignored.
 
-```bash
-ls -la release.keystore   # confirm it exists
+```powershell
+dir release.keystore   # confirm it exists
 ```
 
 ## 3. Create `keystore.properties`
 
-```bash
-cp keystore.properties.example keystore.properties
+```powershell
+copy keystore.properties.example keystore.properties
 ```
 
-Edit `keystore.properties` and replace both password placeholders with the password from step 2:
+Open `keystore.properties` in any text editor (Notepad, VS Code, Android Studio) and replace both password placeholders with the password from step 2:
 
 ```properties
 storeFile=release.keystore
@@ -62,14 +72,14 @@ This file is gitignored.
 
 | Artifact | Where |
 |---|---|
-| `release.keystore` file (~2.5 KB) | Encrypted folder in cloud storage (Drive / Dropbox / iCloud), or attached to a password-manager entry that supports file attachments (1Password, Bitwarden Premium, ...) |
+| `release.keystore` file (~2.5 KB) | Encrypted folder in cloud storage (OneDrive / Google Drive / Dropbox), or attached to a password-manager entry that supports file attachments (1Password, Bitwarden Premium, ...) |
 | The password itself | Password manager entry titled e.g. "Dango Diary release keystore" |
 
 **If you lose either, every installed copy of the app becomes orphaned** — you'd have to uninstall (losing all data) and re-install with a new keystore.
 
 ## 5. Get the release SHA-1 fingerprint
 
-```bash
+```powershell
 keytool -list -v -keystore release.keystore -alias dangodiary
 ```
 
@@ -80,6 +90,8 @@ SHA1: AB:CD:EF:01:23:45:...:9A:BC
 ```
 
 Copy that hex string (value only, no `SHA1:` prefix).
+
+If `keytool` isn't on your PATH, the same `& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" ...` form from step 2 works.
 
 ## 6. Add the SHA-1 to your Google API key
 
@@ -97,14 +109,14 @@ Google Cloud propagates the change in seconds — sometimes ~1 minute.
 
 ## 7. Build the release APK
 
-```bash
-./gradlew assembleRelease
+```powershell
+.\gradlew.bat assembleRelease
 ```
 
 Output:
 
 ```
-app/build/outputs/apk/release/app-release.apk
+app\build\outputs\apk\release\app-release.apk
 ```
 
 If you see `SigningConfig with name 'release' not found`, your `keystore.properties` file is missing or has a typo — re-check step 3.
@@ -121,17 +133,27 @@ If Developer options aren't enabled yet on the phone:
 
 Then:
 
-```bash
-adb devices   # should list the phone
+```powershell
+adb devices
+```
 
-adb install -r app/build/outputs/apk/release/app-release.apk
+Should list the phone. If `adb` isn't on your PATH, use the one shipped with Android Studio's SDK:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices
+```
+
+Then install:
+
+```powershell
+adb install -r app\build\outputs\apk\release\app-release.apk
 ```
 
 `Success` means installed.
 
 ### Option B — No USB
 
-Put the APK in a cloud-storage folder accessible from the phone (Drive, Dropbox, etc.), tap it on the phone to install. First time, Android will ask you to allow "install unknown apps" for the app that delivered the file.
+Put the APK on your phone via any path you like — email it to yourself, drop it in OneDrive / Google Drive, USB-transfer the file, etc. On the phone, tap the APK file. First time, Android will ask you to allow "install unknown apps" for whichever app delivered the file.
 
 ## 9. Smoke test on the phone
 
@@ -145,11 +167,11 @@ Put the APK in a cloud-storage folder accessible from the phone (Drive, Dropbox,
 
 ## Day-to-day, after code changes
 
-```bash
+```powershell
 git pull                            # if changes came from elsewhere
 # edit code...
-./gradlew assembleRelease
-adb install -r app/build/outputs/apk/release/app-release.apk
+.\gradlew.bat assembleRelease
+adb install -r app\build\outputs\apk\release\app-release.apk
 ```
 
 Data persists across reinstalls because the signing key is the same. Icon doesn't change, settings stay, entries stay.
@@ -160,5 +182,6 @@ Data persists across reinstalls because the signing key is the same. Icon doesn'
 |---|---|
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` on `adb install -r` | The installed APK is signed with a different key than the one you're installing. Either you regenerated the keystore (don't!) or you're installing a debug APK over a release one. Fix: pick one signing config and stay there. If you must switch, `adb uninstall com.dangodiary` — but this wipes data. |
 | Maps + Places stop working after a Google Cloud edit | Usually a typo in the SHA-1 or the wrong project selected. Cross-check Cloud Console → Credentials → your key → Application restrictions. |
-| You move to a new build machine | Copy `release.keystore` and `keystore.properties` from your backup to the repo root on the new machine. `assembleRelease` will use them. |
+| `keytool` or `adb` "not recognized as an internal or external command" | They're not on PATH. Use the Android Studio bundled paths shown in steps 2 / 5 (`keytool`) and 8 (`adb`). |
+| You move to a new build machine | Copy `release.keystore` and `keystore.properties` from your backup into the project root on the new machine. `.\gradlew.bat assembleRelease` will use them. |
 | Forgot the keystore password | No recovery. The keystore is unrecoverable. You'll need to generate a new one (step 2), add its SHA-1 to the API key (step 6), uninstall the old app on each device, install the new one (loses all data). Don't forget the password. |
