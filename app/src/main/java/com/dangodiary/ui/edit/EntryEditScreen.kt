@@ -3,6 +3,7 @@ package com.dangodiary.ui.edit
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -144,6 +145,7 @@ fun EntryEditScreen(
                     // weight of the page's primary action.
                     OutlinedButton(
                         onClick = { vm.save(onDone = onDone) },
+                        border = faintOutlineBorder(),
                         modifier = Modifier.padding(end = 8.dp),
                     ) {
                         Text(stringResource(R.string.edit_save))
@@ -589,12 +591,12 @@ private fun ListActionRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        OutlinedButton(onClick = onAdd) {
+        OutlinedButton(onClick = onAdd, border = faintOutlineBorder()) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(Modifier.padding(start = 4.dp))
             Text(addLabel)
         }
-        OutlinedButton(onClick = onToggleEditing) {
+        OutlinedButton(onClick = onToggleEditing, border = faintOutlineBorder()) {
             Icon(Icons.Filled.Edit, contentDescription = null)
             Spacer(Modifier.padding(start = 4.dp))
             Text(stringResource(
@@ -603,3 +605,10 @@ private fun ListActionRow(
         }
     }
 }
+
+/** Border for OutlinedButtons on the edit page. Uses [androidx.compose.material3.ColorScheme.outlineVariant]
+ *  — Material 3's "softer" outline tone — so the buttons read as outlined without competing
+ *  with the OutlinedTextFields above them, which use the stronger `outline` tone. */
+@Composable
+private fun faintOutlineBorder(): BorderStroke =
+    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
