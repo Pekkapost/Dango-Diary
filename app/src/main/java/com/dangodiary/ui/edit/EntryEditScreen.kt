@@ -32,11 +32,11 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -139,7 +139,13 @@ fun EntryEditScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = { vm.save(onDone = onDone) }) {
+                    // Outlined treatment matches the Add/Edit buttons in each list section
+                    // below; more padding than a plain text button gives Save the visual
+                    // weight of the page's primary action.
+                    OutlinedButton(
+                        onClick = { vm.save(onDone = onDone) },
+                        modifier = Modifier.padding(end = 8.dp),
+                    ) {
                         Text(stringResource(R.string.edit_save))
                     }
                 },
@@ -304,7 +310,7 @@ fun EntryEditScreen(
                 )
             }
 
-            // Add Photo + Edit. Add Photo's TextButton opens a camera/gallery dropdown — the
+            // Add Photo + Edit. Add Photo's button opens a camera/gallery DropdownMenu;
             // visual treatment matches the dish Add/Edit row above so the two list sections
             // read as siblings.
             Box {
@@ -577,19 +583,18 @@ private fun ListActionRow(
     isEditing: Boolean,
     onToggleEditing: () -> Unit,
 ) {
-    // SpaceEvenly distributes whitespace equally around both buttons rather than letting Add
-    // take all leftover width and pinning Edit to the right edge. Reads as visually balanced
-    // even though Add's label is longer than Edit's.
+    // SpaceEvenly distributes whitespace equally around both buttons. Outlined treatment
+    // gives them visual weight that matches the Save button in the top app bar.
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        TextButton(onClick = onAdd) {
+        OutlinedButton(onClick = onAdd) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(Modifier.padding(start = 4.dp))
             Text(addLabel)
         }
-        TextButton(onClick = onToggleEditing) {
+        OutlinedButton(onClick = onToggleEditing) {
             Icon(Icons.Filled.Edit, contentDescription = null)
             Spacer(Modifier.padding(start = 4.dp))
             Text(stringResource(
