@@ -42,7 +42,7 @@
     <string name="edit_field_dish">Dish</string>
     <string name="edit_field_price">Dish Price</string>
     <string name="edit_field_address">Address</string>
-    <string name="edit_add_dish">Add another dish</string>
+    <string name="edit_add_dish">Add a dish</string>
     <string name="edit_remove_dish">Remove dish</string>
     <string name="edit_reorder_dish">Drag to reorder dish</string>
     <string name="edit_reorder_photo">Drag to reorder photo</string>

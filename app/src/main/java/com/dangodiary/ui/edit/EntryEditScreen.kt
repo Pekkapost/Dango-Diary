@@ -66,6 +66,10 @@ import com.dangodiary.ui.common.RestaurantNameField
 import sh.calvin.reorderable.ReorderableColumn
 import java.io.File
 
+// Empty, or digits / one dot or comma / digits — covers partial input (e.g. "12.", "0,5")
+// without admitting letters, spaces, or extra separators.
+private val PRICE_INPUT_REGEX = Regex("^\\d*[.,]?\\d*$")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryEditScreen(
@@ -440,7 +444,11 @@ private fun DishRow(
         // field to grow taller than the dish-name sibling.
         OutlinedTextField(
             value = draft.priceText,
-            onValueChange = onPriceChange,
+            // Only accept digits with at most one decimal separator. Catches paste-of-text,
+            // voice input, and physical-keyboard typing that the decimal keyboard layout
+            // alone wouldn't block. Comma and dot are both allowed at input time; the parser
+            // normalises to a dot at save time.
+            onValueChange = { v -> if (PRICE_INPUT_REGEX.matches(v)) onPriceChange(v) },
             label = { Text(stringResource(R.string.edit_field_price)) },
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
@@ -564,11 +572,14 @@ private fun ListActionRow(
     isEditing: Boolean,
     onToggleEditing: () -> Unit,
 ) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        TextButton(
-            onClick = onAdd,
-            modifier = Modifier.weight(1f),
-        ) {
+    // SpaceEvenly distributes whitespace equally around both buttons rather than letting Add
+    // take all leftover width and pinning Edit to the right edge. Reads as visually balanced
+    // even though Add's label is longer than Edit's.
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        TextButton(onClick = onAdd) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(Modifier.padding(start = 4.dp))
             Text(addLabel)
