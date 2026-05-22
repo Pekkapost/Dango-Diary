@@ -35,6 +35,12 @@ data class DishDraft(
 data class EditState(
     val id: Long? = null,
     val name: String = "",
+    /** The restaurant name as loaded from the DB (or "" for a new entry). Used by the name
+     *  field to suppress autocomplete suggestions for the unedited loaded value — typing into
+     *  the field for an existing entry shouldn't immediately blast the user with alternatives
+     *  for what they already saved. Any user edit makes [name] diverge from this and unlocks
+     *  the dropdown. */
+    val initialName: String = "",
     val visitedOn: Long = LocalDate.now().toEpochDay(),
     val rating: Int = 0,
     val cuisine: String? = null,
@@ -103,6 +109,7 @@ class EntryEditViewModel(
             it.copy(
                 id = entry.id,
                 name = entry.name,
+                initialName = entry.name,
                 visitedOn = entry.visitedOn,
                 rating = entry.rating,
                 cuisine = entry.cuisine,

@@ -3,6 +3,7 @@ package com.dangodiary.util
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -31,6 +32,12 @@ class AppSettings(private val dataStore: DataStore<Preferences>) {
         prefs[KEY_THEME] ?: FALLBACK_THEME
     }
 
+    /** When true, the list-row total and the detail subtitle's total-price segment are hidden.
+     *  Per-dish prices in the detail's Dishes section are still shown. */
+    val hideTotalPrice: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_HIDE_TOTAL_PRICE] ?: false
+    }
+
     suspend fun setDefaultCurrency(code: String) {
         dataStore.edit { it[KEY_DEFAULT_CURRENCY] = code.trim().uppercase() }
     }
@@ -39,11 +46,16 @@ class AppSettings(private val dataStore: DataStore<Preferences>) {
         dataStore.edit { it[KEY_THEME] = name }
     }
 
+    suspend fun setHideTotalPrice(v: Boolean) {
+        dataStore.edit { it[KEY_HIDE_TOTAL_PRICE] = v }
+    }
+
     companion object {
         const val FALLBACK_CURRENCY = "USD"
         const val FALLBACK_THEME = "SYSTEM"
         private val KEY_DEFAULT_CURRENCY = stringPreferencesKey("default_currency")
         private val KEY_THEME = stringPreferencesKey("theme")
+        private val KEY_HIDE_TOTAL_PRICE = booleanPreferencesKey("hide_total_price")
     }
 }
 

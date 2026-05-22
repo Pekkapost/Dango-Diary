@@ -56,4 +56,7 @@ object CuisineCatalog {
         CuisineGroup.entries.map { g -> g to all.filter { it.group == g } }
 
     fun labelFor(id: String?): String? = id?.let { byId[it]?.label }
+
+    /** The supertype an entry's cuisine belongs to, or null if [id] is unknown / not set. */
+    fun groupFor(id: String?): CuisineGroup? = id?.let { byId[it]?.group }
 }

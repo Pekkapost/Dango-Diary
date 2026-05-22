@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,7 +27,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -75,12 +78,19 @@ fun EntryDetailScreen(
         key = "detail-$entryId",
     )
     val entry by vm.entry.collectAsStateWithLifecycle()
+    val hideTotalPrice by app.appSettings.hideTotalPrice
+        .collectAsStateWithLifecycle(initialValue = false)
     var confirmDelete by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(entry?.name ?: stringResource(R.string.detail_title)) },
+                title = {
+                    Text(
+                        entry?.name ?: stringResource(R.string.detail_title),
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
@@ -102,9 +112,11 @@ fun EntryDetailScreen(
             // Either still loading or the row was deleted from under us. Either way: nothing to render.
             return@Scaffold
         }
-        DetailBody(current, modifier = Modifier
-            .fillMaxSize()
-            .padding(padding))
+        DetailBody(
+            entry = current,
+            hideTotalPrice = hideTotalPrice,
+            modifier = Modifier.fillMaxSize().padding(padding),
+        )
     }
 
     if (confirmDelete) {
@@ -128,7 +140,11 @@ fun EntryDetailScreen(
 }
 
 @Composable
-private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
+private fun DetailBody(
+    entry: Entry,
+    hideTotalPrice: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val ctx = LocalContext.current
     val photos = remember(entry.photoPathsJson) {
         Photos.decode(entry.photoPathsJson)
@@ -146,21 +162,17 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
     val subtitle = buildList {
         CuisineCatalog.labelFor(entry.cuisine)?.let { add(it) }
         add(formatDate(entry.visitedOn))
-        if (totalCents != null) {
+        if (totalCents != null && !hideTotalPrice) {
             add(formatPrice(totalCents, entry.currencyCode))
         }
     }.joinToString("  ·  ")
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        // The name is rendered in the top app bar (bold); no need to repeat it here.
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                entry.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-            )
             RatingStars(rating = entry.rating)
             Text(
                 text = subtitle,
@@ -172,10 +184,45 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
         if (hasLocation) {
             HorizontalDivider()
             DetailSection(title = stringResource(R.string.detail_section_location)) {
-                if (!entry.addressText.isNullOrBlank()) {
-                    Text(entry.addressText, style = MaterialTheme.typography.bodyMedium)
+                var mapExpanded by remember { mutableStateOf(false) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (!entry.addressText.isNullOrBlank()) {
+                        Text(
+                            entry.addressText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
+                        )
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
+                    if (lat != null && lng != null) {
+                        IconButton(onClick = { mapExpanded = !mapExpanded }) {
+                            Icon(
+                                imageVector = if (mapExpanded) Icons.Filled.ExpandLess
+                                else Icons.Filled.ExpandMore,
+                                contentDescription = stringResource(
+                                    if (mapExpanded) R.string.detail_hide_map
+                                    else R.string.detail_show_map
+                                ),
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                val uri = "geo:$lat,$lng?q=$lat,$lng(${Uri.encode(entry.name)})".toUri()
+                                ctx.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                            },
+                        ) {
+                            Icon(
+                                Icons.Filled.Map,
+                                contentDescription = stringResource(R.string.detail_open_in_maps),
+                            )
+                        }
+                    }
                 }
-                if (lat != null && lng != null) {
+                if (mapExpanded && lat != null && lng != null) {
                     val cameraState = rememberCameraPositionState {
                         position = CameraPosition.fromLatLngZoom(LatLng(lat, lng), 15f)
                     }
@@ -183,6 +230,7 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
+                            .padding(top = 8.dp)
                             .clip(RoundedCornerShape(12.dp)),
                         cameraPositionState = cameraState,
                         uiSettings = MapUiSettings(
@@ -194,15 +242,6 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
                         ),
                     ) {
                         Marker(state = MarkerState(position = LatLng(lat, lng)))
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            val uri = "geo:$lat,$lng?q=$lat,$lng(${Uri.encode(entry.name)})".toUri()
-                            ctx.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                        },
-                    ) {
-                        Icon(Icons.Filled.Map, contentDescription = null)
-                        Text("  ${stringResource(R.string.detail_open_in_maps)}")
                     }
                 }
             }

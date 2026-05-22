@@ -153,6 +153,9 @@ fun EntryEditScreen(
                 supportingText = if (s.nameError) {
                     { Text(stringResource(R.string.edit_name_required)) }
                 } else null,
+                // Don't fire autocomplete for the saved name when editing — only after the user
+                // changes it. Empty on new entries (so first-time typing still gets suggestions).
+                suppressSuggestionsFor = s.initialName,
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -430,40 +433,50 @@ private fun RatingFieldBox(
     errorText: String,
     label: String,
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            // A single space keeps the field "non-empty" so the floating label stays up. The
-            // text colour is transparent so the space never renders.
-            value = " ",
-            onValueChange = {},
-            readOnly = true,
-            enabled = false,
-            isError = isError,
-            label = { Text(label) },
-            supportingText = if (isError) {
-                { Text(errorText) }
-            } else null,
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = Color.Transparent,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledSupportingTextColor = MaterialTheme.colorScheme.error,
-                // Mirror the error variants so isError flips border + label colours too.
-                errorTextColor = Color.Transparent,
-            ),
-        )
-        // Stars overlay the field's content area. Field default min height is 56 dp; centering
-        // the 48 dp star row inside that takes a 4 dp top padding. Horizontal padding of 12 dp
-        // matches OutlinedTextField's internal content insets.
-        RatingStars(
-            rating = rating,
-            onRatingChange = onRatingChange,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 12.dp, end = 12.dp, top = 4.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        )
+    // Error text is rendered outside the Box so the field's height stays constant whether or
+    // not the error is showing. That way the stars overlay's Alignment.Center always centers
+    // on the field's content area and never drifts with supportingText height.
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                // A single space keeps the field "non-empty" so the floating label stays up.
+                // The text colour is transparent so the space never renders.
+                value = " ",
+                onValueChange = {},
+                readOnly = true,
+                enabled = false,
+                isError = isError,
+                label = { Text(label) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = Color.Transparent,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    // Mirror error variants so isError flips border + label colours too.
+                    errorTextColor = Color.Transparent,
+                ),
+            )
+            // Stars overlay the field's content area, centered vertically inside the Box (which
+            // is now the same height as the OutlinedTextField since we pulled supportingText
+            // out). Horizontal padding of 12 dp matches OutlinedTextField's internal content
+            // insets so the outermost stars line up with the field's left/right edges.
+            RatingStars(
+                rating = rating,
+                onRatingChange = onRatingChange,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            )
+        }
+        if (isError) {
+            Text(
+                text = errorText,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+            )
+        }
     }
 }

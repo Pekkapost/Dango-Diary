@@ -12,11 +12,18 @@
     <string name="list_sort_recent">Recently visited</string>
     <string name="list_sort_rating">Highest rated</string>
     <string name="list_sort_name">Name (A–Z)</string>
-    <string name="list_sort_price">Price (low to high)</string>
-    <string name="list_filter_min_rating">Min rating: %1$d★</string>
-    <string name="list_filter_any_rating">Any rating</string>
-    <string name="list_filter_has_photo">Has photo</string>
+    <string name="list_sort_distance">Nearest first</string>
+    <string name="list_filter_title">Filters</string>
+    <string name="list_filter_min_rating_label">Minimum rating: %1$d ★</string>
+    <string name="list_filter_min_rating_any">Minimum rating: any</string>
+    <string name="list_filter_cuisine_label">Cuisine</string>
+    <string name="list_filter_cuisine_any">Any cuisine</string>
+    <string name="list_filter_cuisine_group_any">%1$s (any)</string>
+    <string name="list_filter_has_photo">Only entries with a photo</string>
     <string name="list_filter_clear">Clear filters</string>
+    <string name="list_filter_done">Done</string>
+    <string name="list_filter_chip_cuisine">%1$s</string>
+    <string name="list_sort_distance_no_location">Location required for distance sort. Grant permission or pick a different sort.</string>
     <string name="action_add">Add restaurant</string>
     <string name="action_back">Back</string>
 
@@ -30,7 +37,7 @@
     <string name="edit_cuisine_placeholder">Select cuisine</string>
     <string name="edit_cuisine_clear">Clear cuisine</string>
     <string name="edit_field_notes">Notes</string>
-    <string name="edit_field_companions">Companions (comma separated)</string>
+    <string name="edit_field_companions">Companions</string>
     <string name="edit_companions_placeholder">Who did you dine with?</string>
     <string name="edit_field_dish">Dish</string>
     <string name="edit_dish_placeholder">What did you order?</string>
@@ -62,6 +69,8 @@
     <string name="detail_action_edit">Edit</string>
     <string name="detail_action_delete">Delete</string>
     <string name="detail_open_in_maps">Open in Maps</string>
+    <string name="detail_show_map">Show map</string>
+    <string name="detail_hide_map">Hide map</string>
     <string name="detail_delete_confirm_title">Delete this restaurant?</string>
     <string name="detail_delete_confirm_message">This cannot be undone.</string>
     <string name="detail_delete_confirm_ok">Delete</string>
@@ -75,6 +84,9 @@
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_theme">Theme</string>
+    <string name="settings_section_display">Display</string>
+    <string name="settings_hide_total_price">Hide total price</string>
+    <string name="settings_hide_total_price_help">Hides the per-entry total on the list and the price segment in the detail header. Per-dish prices are still shown.</string>
     <string name="settings_section_defaults">Defaults</string>
     <string name="settings_default_currency">Default currency code</string>
     <string name="settings_default_currency_help">Applied to new entries. Existing entries keep their saved currency.</string>

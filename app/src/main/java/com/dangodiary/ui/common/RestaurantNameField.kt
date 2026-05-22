@@ -63,6 +63,11 @@ fun RestaurantNameField(
     modifier: Modifier = Modifier,
     isError: Boolean = false,
     supportingText: (@Composable () -> Unit)? = null,
+    /** A name value that should be treated as "already known" — typically the saved restaurant
+     *  name on an existing entry being edited. The dropdown is suppressed as long as the field's
+     *  current value matches this exactly; any edit that diverges from it re-enables suggestions.
+     *  Pass "" (the default) for new entries. */
+    suppressSuggestionsFor: String = "",
 ) {
     val ctx = LocalContext.current
     val placesReady = Places.isInitialized()
@@ -80,7 +85,10 @@ fun RestaurantNameField(
 
     LaunchedEffect(name) {
         if (!placesReady || placesClient == null) return@LaunchedEffect
-        if (name.length < MIN_QUERY_LEN || name == lastPickedName) {
+        if (name.length < MIN_QUERY_LEN ||
+            name == lastPickedName ||
+            (suppressSuggestionsFor.isNotEmpty() && name == suppressSuggestionsFor)
+        ) {
             predictions = emptyList()
             expanded = false
             return@LaunchedEffect

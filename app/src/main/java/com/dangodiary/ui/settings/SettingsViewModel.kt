@@ -17,6 +17,7 @@ data class SettingsState(
     val defaultCurrency: String = AppSettings.FALLBACK_CURRENCY,
     val draftDefaultCurrency: String = AppSettings.FALLBACK_CURRENCY,
     val theme: ThemeOption = ThemeOption.SYSTEM,
+    val hideTotalPrice: Boolean = false,
     val loading: Boolean = true,
     val saved: Boolean = false,
 ) {
@@ -33,11 +34,13 @@ class SettingsViewModel(private val settings: AppSettings) : ViewModel() {
         viewModelScope.launch {
             val currency = settings.defaultCurrency.first()
             val theme = ThemeOption.fromName(settings.themeName.first())
+            val hideTotalPrice = settings.hideTotalPrice.first()
             _state.update {
                 it.copy(
                     defaultCurrency = currency,
                     draftDefaultCurrency = currency,
                     theme = theme,
+                    hideTotalPrice = hideTotalPrice,
                     loading = false,
                 )
             }
@@ -64,6 +67,12 @@ class SettingsViewModel(private val settings: AppSettings) : ViewModel() {
     fun setTheme(option: ThemeOption) {
         _state.update { it.copy(theme = option) }
         viewModelScope.launch { settings.setTheme(option.name) }
+    }
+
+    /** Toggle is a one-tap setting too; persist immediately so list/detail re-render. */
+    fun setHideTotalPrice(v: Boolean) {
+        _state.update { it.copy(hideTotalPrice = v) }
+        viewModelScope.launch { settings.setHideTotalPrice(v) }
     }
 
     companion object {
