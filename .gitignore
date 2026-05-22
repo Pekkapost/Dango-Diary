@@ -8,3 +8,9 @@ captures/
 .externalNativeBuild/
 .cxx/
 local.properties
+
+# Release signing — keystore file + the properties file that holds its passwords.
+# Both contain secrets; never commit. See app/build.gradle.kts for how they're consumed.
+keystore.properties
+*.keystore
+*.jks

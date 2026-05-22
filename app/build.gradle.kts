@@ -17,6 +17,23 @@ val mapsApiKey: String = run {
     props.getProperty("MAPS_API_KEY", "")
 }
 
+// Read release-signing config from keystore.properties (gitignored). If the file isn't there,
+// release builds fall through to whatever default Gradle wants to do (typically: unsigned, or
+// signed with the debug keystore depending on AGP version). Personal-install workflow:
+//   1. `keytool -genkey -v -keystore release.keystore -alias dangodiary -keyalg RSA -keysize 2048 -validity 36500`
+//   2. Drop the resulting `release.keystore` in the repo root.
+//   3. Create `keystore.properties` next to it with:
+//        storeFile=release.keystore
+//        storePassword=<your password>
+//        keyAlias=dangodiary
+//        keyPassword=<your password>
+//   4. Back up the keystore file + password somewhere safe. Losing either breaks the ability
+//      to ever update the installed app.
+val keystoreProps: Properties? = run {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) Properties().apply { load(file.inputStream()) } else null
+}
+
 android {
     namespace = "com.dangodiary"
     compileSdk = 34
@@ -32,6 +49,17 @@ android {
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
+    signingConfigs {
+        keystoreProps?.let { props ->
+            create("release") {
+                storeFile = rootProject.file(props.getProperty("storeFile"))
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -39,6 +67,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // Only attach the release signing config when keystore.properties is present.
+            // Lets fresh clones run `./gradlew assembleDebug` without setup; only
+            // `assembleRelease` needs the keystore.
+            keystoreProps?.let { signingConfig = signingConfigs.getByName("release") }
         }
     }
 
