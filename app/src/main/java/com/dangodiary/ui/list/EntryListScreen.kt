@@ -579,32 +579,30 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
-                // Subtitle is split into a fixed-width date column + a flexible city column so
-                // city text starts at the same x-offset across every row regardless of how
-                // wide the date string happens to be. 96 dp fits MEDIUM-style en-US dates
-                // ("May 22, 2026") at bodySmall with breathing room; if a locale needs more,
-                // the city overflows with ellipsis rather than shoving the date.
+                // City on the left taking the flexible space, date pinned to a fixed-width
+                // right column so dates line up flush across every row regardless of city
+                // length. 96 dp fits MEDIUM-style en-US dates ("May 22, 2026") at bodySmall
+                // with breathing room; long city names overflow with ellipsis rather than
+                // shoving the date.
                 val city = extractCity(entry.addressText)?.takeIf { it.isNotEmpty() }
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = city.orEmpty(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
                     Text(
                         text = formatDate(entry.visitedOn),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
                         modifier = Modifier.width(96.dp),
                     )
-                    if (city != null) {
-                        Text(
-                            text = city,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.End,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingStars(rating = entry.rating, modifier = Modifier.weight(1f))
