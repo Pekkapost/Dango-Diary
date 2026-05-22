@@ -126,10 +126,7 @@ fun EntryDetailScreen(
                                     overflowOpen = false
                                     val name = entry?.name ?: return@DropdownMenuItem
                                     val loc = entry?.addressText.orEmpty()
-                                    val url = buildYelpSearchUrl(name, loc)
-                                    runCatching {
-                                        ctx.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-                                    }
+                                    openYelpSearch(ctx, name, loc)
                                 },
                             )
                         }
@@ -358,10 +355,37 @@ private fun DetailSection(
     }
 }
 
-/** Yelp search URL for the given restaurant. Includes the address as `find_loc` when present
- *  so Yelp narrows the search to the right area; without it the result depends on Yelp's
- *  best guess from the device's IP. */
-private fun buildYelpSearchUrl(name: String, location: String): String {
+/**
+ * Open a Yelp search for the given restaurant. Tries the Yelp Android app first via the
+ * `yelp:///search` deep-link scheme; falls back to the web URL (which the browser will
+ * handle) when the app isn't installed. Uses a try/catch on [ActivityNotFoundException]
+ * instead of `resolveActivity` so we don't need an Android 11+ `<queries>` manifest entry.
+ */
+private fun openYelpSearch(ctx: android.content.Context, name: String, location: String) {
+    val appUri = buildYelpAppUri(name, location)
+    val webUri = buildYelpWebUrl(name, location).toUri()
+    val appIntent = Intent(Intent.ACTION_VIEW, appUri)
+    try {
+        ctx.startActivity(appIntent)
+    } catch (_: android.content.ActivityNotFoundException) {
+        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, webUri)) }
+    }
+}
+
+/** Yelp app deep-link: `yelp:///search?terms=<name>&location=<addr>`. Three slashes —
+ *  empty host between the scheme and the path. */
+private fun buildYelpAppUri(name: String, location: String): android.net.Uri {
+    val terms = Uri.encode(name.trim())
+    val locParam = location.trim().takeIf { it.isNotEmpty() }
+        ?.let { "&location=${Uri.encode(it)}" }
+        .orEmpty()
+    return "yelp:///search?terms=$terms$locParam".toUri()
+}
+
+/** Browser-fallback Yelp search URL. Includes the address as `find_loc` when present so
+ *  Yelp narrows the search to the right area; without it the result depends on Yelp's best
+ *  guess from the device's IP. */
+private fun buildYelpWebUrl(name: String, location: String): String {
     val desc = Uri.encode(name.trim())
     val locParam = location.trim().takeIf { it.isNotEmpty() }
         ?.let { "&find_loc=${Uri.encode(it)}" }
