@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -578,20 +579,32 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
-                // Subtitle = "<date>  ·  <city>". Date in front, city after. Cuisine still
-                // drives the filter sheet but isn't surfaced on the row.
-                val city = extractCity(entry.addressText)
-                val subtitle = listOfNotNull(
-                    formatDate(entry.visitedOn),
-                    city?.takeIf { it.isNotEmpty() },
-                ).joinToString("  ·  ")
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
+                // Subtitle is split into a fixed-width date column + a flexible city column so
+                // city text starts at the same x-offset across every row regardless of how
+                // wide the date string happens to be. 96 dp fits MEDIUM-style en-US dates
+                // ("May 22, 2026") at bodySmall with breathing room; if a locale needs more,
+                // the city overflows with ellipsis rather than shoving the date.
+                val city = extractCity(entry.addressText)?.takeIf { it.isNotEmpty() }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = formatDate(entry.visitedOn),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.width(96.dp),
+                    )
+                    if (city != null) {
+                        Text(
+                            text = "·  $city",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingStars(rating = entry.rating, modifier = Modifier.weight(1f))
                     val totalCents = remember(entry.dishesJson) {
