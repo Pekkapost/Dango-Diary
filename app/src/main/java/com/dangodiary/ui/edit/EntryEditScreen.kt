@@ -607,8 +607,8 @@ private fun ListActionRow(
 }
 
 /** Border for OutlinedButtons on the edit page. Uses [androidx.compose.material3.ColorScheme.outlineVariant]
- *  with 40 % alpha so the buttons read as outlined without competing with the
- *  OutlinedTextFields above them, which use the much stronger `outline` tone. */
+ *  at 65 % alpha — visibly softer than the OutlinedTextFields above (which use the stronger
+ *  `outline` tone at full alpha), but more present than a near-invisible hairline. */
 @Composable
 private fun faintOutlineBorder(): BorderStroke =
-    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f))
