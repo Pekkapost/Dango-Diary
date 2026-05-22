@@ -199,6 +199,13 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
             }
         }
 
+        if (entry.meal.isNotBlank()) {
+            HorizontalDivider()
+            DetailSection(title = stringResource(R.string.detail_section_meal)) {
+                Text(entry.meal, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
         if (entry.companions.isNotBlank()) {
             HorizontalDivider()
             DetailSection(title = stringResource(R.string.detail_section_with)) {

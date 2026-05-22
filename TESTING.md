@@ -73,7 +73,7 @@ Expect 10–30 fps depending on your SSH latency. Mouse, keyboard, and (on scrcp
 ## Caveats
 
 - **Map tiles** on the detail screen will render gray without a Maps SDK API key in [local.properties](local.properties). Pin coordinates still save/load correctly. Add `MAPS_API_KEY=…` and rebuild to fix. Full GCP walkthrough in [CLOUD-SETUP.md](CLOUD-SETUP.md).
-- **Address autocomplete** needs **both** Places APIs enabled on the same key (the new one for programmatic calls, the legacy one because the fullscreen autocomplete widget still hits it under the hood), plus the emulator's debug SHA-1 added to the key's Android-app restriction. Without that the autocomplete activity closes immediately on tap — check Logcat for `tag:AddressAutocomplete` to confirm. Full setup in [CLOUD-SETUP.md](CLOUD-SETUP.md).
+- **Restaurant-name autocomplete** needs Places API (New) enabled on the key, plus the emulator's debug SHA-1 added to the key's Android-app restriction. Without that, typing in the Name field shows no suggestion dropdown — check Logcat for `tag:RestaurantNameField` to see the failure status. Manual entry of name and address still works. Full setup in [CLOUD-SETUP.md](CLOUD-SETUP.md).
 - **Camera capture** has no real camera on the emulator — it uses a synthetic test image. The gallery picker / `Pick photo from gallery` flow is the realistic path on the emulator.
 - **scrcpy 1.x clipboard warning** in the server logs is harmless — affects clipboard sync only, not display or input. scrcpy 2.x on your local side avoids it.
 

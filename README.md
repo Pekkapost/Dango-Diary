@@ -67,7 +67,7 @@ MAPS_API_KEY=
 ```
 
 - `sdk.dir` — the SDK path you copied in step 1. **Use double backslashes** (`\\`) or forward slashes (`/`); a single `\` will be read as a Java escape.
-- `MAPS_API_KEY` — leave empty for now. Map tiles render gray and address autocomplete is disabled without one, but the rest of the app (including saved entries) works fine. The full Google Cloud walkthrough — creating the key, enabling Maps SDK plus both Places APIs (new + legacy, the autocomplete widget needs both), and setting cost guards so you can't be charged — is in **[CLOUD-SETUP.md](CLOUD-SETUP.md)**.
+- `MAPS_API_KEY` — leave empty for now. Map tiles render gray and the Name field's restaurant autocomplete is disabled without one, but the rest of the app (including saved entries and manual address entry) works fine. The full Google Cloud walkthrough — creating the key, enabling Maps SDK + Places API (New), and setting cost guards so you can't be charged — is in **[CLOUD-SETUP.md](CLOUD-SETUP.md)**.
 
 ### **4. Open the project in Android Studio**
 
@@ -91,7 +91,7 @@ Tap **+ Add restaurant**, fill in the form, tap **Save**. The entry appears in t
 
 Things to know on the emulator:
 - **Camera** uses a synthetic test image, not a real photo. Use **Choose from gallery** for realistic photo testing — drag a JPG from your desktop onto the emulator window to add it to the gallery first.
-- **Address autocomplete** needs the Places API enabled on your key plus the emulator's debug SHA-1 added to the key restriction (see [CLOUD-SETUP.md](CLOUD-SETUP.md) step 9). Without that the autocomplete activity closes immediately on tap.
+- **Name autocomplete** needs the Places API (New) enabled on your key plus the emulator's debug SHA-1 added to the key restriction (see [CLOUD-SETUP.md](CLOUD-SETUP.md) step 9). Without that, typing in the Name field shows no suggestions — manual entry still works.
 - **Detail map preview** centers on the saved pin. If you haven't picked an address yet, the map section is hidden — there's no separate map picker in the edit flow.
 - **Hot reload** — when you change Kotlin code, just press ▶ again; Android Studio rebuilds and reinstalls in a few seconds.
 
@@ -139,9 +139,9 @@ adb logcat -s DangoDiaryApp PhotoStorage
 | [MainActivity.kt](app/src/main/java/com/dangodiary/MainActivity.kt) | Single activity. Sets the Compose content and theme. |
 | [data/](app/src/main/java/com/dangodiary/data/) | `Entry` entity, `EntryDao` (Flow + suspend), `DiaryDatabase`, the cuisine catalog, and JSON helpers for photo paths. |
 | [ui/list/](app/src/main/java/com/dangodiary/ui/list/) | List screen, search/filter/sort ViewModel. |
-| [ui/detail/](app/src/main/java/com/dangodiary/ui/detail/) | Detail screen with section layout (location → dined with → notes → photos) + delete flow. |
-| [ui/edit/](app/src/main/java/com/dangodiary/ui/edit/) | New/edit form, address autocomplete, photo capture/import. |
-| [ui/common/](app/src/main/java/com/dangodiary/ui/common/) | Reusable composables (`RatingStars`, `DatePickerField`, `CuisinePickerField`, `AddressAutocompleteField`, `PhotoGrid`). |
+| [ui/detail/](app/src/main/java/com/dangodiary/ui/detail/) | Detail screen with section layout (location → meal → dined with → notes → photos) + delete flow. |
+| [ui/edit/](app/src/main/java/com/dangodiary/ui/edit/) | New/edit form, restaurant-name autocomplete, photo capture/import. |
+| [ui/common/](app/src/main/java/com/dangodiary/ui/common/) | Reusable composables (`RatingStars`, `DatePickerField`, `CuisinePickerField`, `RestaurantNameField`, `PhotoGrid`). |
 | [util/PhotoStorage.kt](app/src/main/java/com/dangodiary/util/PhotoStorage.kt) | Copies captured/imported photos into `filesDir/photos/` and returns stable paths. |
 | [util/Formatting.kt](app/src/main/java/com/dangodiary/util/Formatting.kt) | Date, currency, and city-extraction formatters. |
 
@@ -150,16 +150,16 @@ adb logcat -s DangoDiaryApp PhotoStorage
 | Surface | Description |
 |---|---|
 | **List screen** | All entries you've recorded, with text search, sort (recency / rating / name / price), and filter chips (min rating, has-photo). Each row shows photo, name, cuisine + city, half-star rating, date, and dish price. |
-| **Add/edit form** | Name, cuisine (grouped picker), date visited, half-star rating (1–5 in 0.5 increments), dish price + currency, address (Google Places autocomplete — sets address and pin together), who you went with, notes, photos from camera or gallery. |
-| **Detail screen** | Header with name + stars + cuisine·date·price subtitle, then sections: Location (address + embedded read-only map + "Open in Maps"), Dined with, Notes, and photos at the bottom. Sections only appear when they have content. |
+| **Add/edit form** | Name (Google Places autocomplete — typing the restaurant name suggests matching places and auto-fills the address + map pin on pick), cuisine + date (paired row), half-star rating (1–5 in 0.5 increments), address (auto-filled from the name pick but editable, or typed manually), meal (what you ordered), dish price + currency, who you went with, notes, photos from camera or gallery. |
+| **Detail screen** | Header with name + stars + cuisine·date·price subtitle, then sections: Location (address + embedded read-only map + "Open in Maps"), Meal, Dined with, Notes, and photos at the bottom. Sections only appear when they have content. |
 
-All data is stored locally in a Room database at the app's private data directory. Photos are copied into the app's `filesDir/photos/`. Nothing leaves the device except Places autocomplete queries while you're typing an address.
+All data is stored locally in a Room database at the app's private data directory. Photos are copied into the app's `filesDir/photos/`. Nothing leaves the device except Places autocomplete queries while you're typing a restaurant name.
 
 ## Limitations
 
-- Requires a Google Maps SDK key for map tiles **and** both Places APIs (new + legacy) for address autocomplete. Without the key, the address field is unusable and the detail-screen map is blank — see [CLOUD-SETUP.md](CLOUD-SETUP.md).
+- Requires a Google Maps SDK key for map tiles **and** Places API (New) for restaurant-name autocomplete. Without the key, the Name field still works for manual entry but won't suggest matches, and the detail-screen map is blank — see [CLOUD-SETUP.md](CLOUD-SETUP.md).
 - No cloud sync, no export/import. Backups are the user's responsibility (Android's auto-backup will capture the DB and photos).
-- No way to enter a location for a place that isn't in Google's index (e.g. a friend's house, a popup) — autocomplete is the only address input path.
+- Places autocomplete is biased by the device's IP, with no explicit location restriction — if you're entering a restaurant from another city by name alone, you may need to add a city name to disambiguate, or pick a similar-named place and edit the address manually.
 - Currency is per-row and free-text; no validation beyond "is this a known ISO 4217 code". Unknown codes fall back to the device default at format time.
 - Cuisine catalog is hardcoded in [Cuisine.kt](app/src/main/java/com/dangodiary/data/Cuisine.kt); there's no UI to add custom cuisines.
 

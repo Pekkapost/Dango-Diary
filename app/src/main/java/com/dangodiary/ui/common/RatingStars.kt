@@ -1,6 +1,7 @@
 package com.dangodiary.ui.common
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -32,8 +33,9 @@ fun RatingStars(
     onRatingChange: ((Int) -> Unit)? = null,
     maxStars: Int = 5,
     tint: Color = RatingAmber,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
 ) {
-    Row(modifier = modifier) {
+    Row(modifier = modifier, horizontalArrangement = horizontalArrangement) {
         for (i in 1..maxStars) {
             val halfValue = i * 2 - 1
             val fullValue = i * 2

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,11 +47,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dangodiary.R
 import com.dangodiary.DangoDiaryApp
-import com.dangodiary.ui.common.AddressAutocompleteField
 import com.dangodiary.ui.common.CuisinePickerField
 import com.dangodiary.ui.common.DatePickerField
 import com.dangodiary.ui.common.PhotoGrid
 import com.dangodiary.ui.common.RatingStars
+import com.dangodiary.ui.common.RestaurantNameField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,41 +123,62 @@ fun EntryEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            OutlinedTextField(
-                value = s.name,
-                onValueChange = vm::setName,
-                label = { Text(stringResource(R.string.edit_field_name)) },
-                isError = s.nameError,
-                supportingText = {
-                    if (s.nameError) Text(stringResource(R.string.edit_name_required))
+            RestaurantNameField(
+                name = s.name,
+                onNameChange = vm::setName,
+                onPlacePicked = { pick ->
+                    vm.applyPickedRestaurant(pick.name, pick.address, pick.latitude, pick.longitude)
                 },
+                label = stringResource(R.string.edit_field_name),
+                isError = s.nameError,
+                supportingText = if (s.nameError) {
+                    { Text(stringResource(R.string.edit_name_required)) }
+                } else null,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
             )
 
-            CuisinePickerField(
-                label = stringResource(R.string.edit_field_cuisine),
-                selectedId = s.cuisine,
-                onSelect = vm::setCuisine,
-                placeholder = stringResource(R.string.edit_cuisine_placeholder),
-                clearLabel = stringResource(R.string.edit_cuisine_clear),
-            )
-
-            DatePickerField(
-                label = stringResource(R.string.edit_field_date),
-                epochDay = s.visitedOn,
-                onDateChange = vm::setDate,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                CuisinePickerField(
+                    label = stringResource(R.string.edit_field_cuisine),
+                    selectedId = s.cuisine,
+                    onSelect = vm::setCuisine,
+                    placeholder = stringResource(R.string.edit_cuisine_placeholder),
+                    clearLabel = stringResource(R.string.edit_cuisine_clear),
+                    modifier = Modifier.weight(1f),
+                )
+                DatePickerField(
+                    label = stringResource(R.string.edit_field_date),
+                    epochDay = s.visitedOn,
+                    onDateChange = vm::setDate,
+                    modifier = Modifier.weight(1f),
+                )
+            }
 
             Column {
-                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                OutlinedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    // Match the OutlinedTextField corner radius (extraSmall = 4.dp) so the
+                    // rating box reads as the same kind of element as the surrounding fields.
+                    shape = MaterialTheme.shapes.extraSmall,
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
                         Text(
                             text = stringResource(R.string.edit_field_rating),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        RatingStars(rating = s.rating, onRatingChange = vm::setRating)
+                        RatingStars(
+                            rating = s.rating,
+                            onRatingChange = vm::setRating,
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        )
                     }
                 }
                 if (s.ratingError) {
@@ -168,6 +190,24 @@ fun EntryEditScreen(
                     )
                 }
             }
+
+            OutlinedTextField(
+                value = s.addressText,
+                onValueChange = vm::setAddressText,
+                label = { Text(stringResource(R.string.edit_field_address)) },
+                placeholder = { Text(stringResource(R.string.edit_address_placeholder)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = s.meal,
+                onValueChange = vm::setMeal,
+                label = { Text(stringResource(R.string.edit_field_meal)) },
+                placeholder = { Text(stringResource(R.string.edit_meal_placeholder)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -181,9 +221,9 @@ fun EntryEditScreen(
                         keyboardType = KeyboardType.Decimal,
                     ),
                     isError = s.priceError,
-                    supportingText = {
-                        if (s.priceError) Text(stringResource(R.string.edit_price_invalid))
-                    },
+                    supportingText = if (s.priceError) {
+                        { Text(stringResource(R.string.edit_price_invalid)) }
+                    } else null,
                     singleLine = true,
                     modifier = Modifier.weight(2f),
                 )
@@ -194,21 +234,6 @@ fun EntryEditScreen(
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                 )
-            }
-
-            AddressAutocompleteField(
-                label = stringResource(R.string.edit_field_address),
-                address = s.addressText,
-                onPlacePicked = { place -> vm.setPlace(place.address, place.latitude, place.longitude) },
-                placeholder = stringResource(R.string.edit_address_placeholder),
-            )
-
-            if (s.addressText.isNotBlank() || s.latitude != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { vm.clearLocation() }) {
-                        Text(stringResource(R.string.edit_clear_location))
-                    }
-                }
             }
 
             OutlinedTextField(

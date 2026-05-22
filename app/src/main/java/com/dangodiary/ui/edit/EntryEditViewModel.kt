@@ -28,6 +28,7 @@ data class EditState(
     val visitedOn: Long = LocalDate.now().toEpochDay(),
     val rating: Int = 0,
     val cuisine: String? = null,
+    val meal: String = "",
     val notes: String = "",
     val companions: String = "",
     val priceText: String = "",
@@ -76,6 +77,7 @@ class EntryEditViewModel(
                 visitedOn = entry.visitedOn,
                 rating = entry.rating,
                 cuisine = entry.cuisine,
+                meal = entry.meal,
                 notes = entry.notes,
                 companions = entry.companions,
                 priceText = entry.dishPriceCents
@@ -95,19 +97,29 @@ class EntryEditViewModel(
     fun setDate(v: Long) = _state.update { it.copy(visitedOn = v) }
     fun setRating(v: Int) = _state.update { it.copy(rating = v, ratingError = false) }
     fun setCuisine(v: String?) = _state.update { it.copy(cuisine = v) }
+    fun setMeal(v: String) = _state.update { it.copy(meal = v) }
     fun setNotes(v: String) = _state.update { it.copy(notes = v) }
     fun setCompanions(v: String) = _state.update { it.copy(companions = v) }
     fun setPriceText(v: String) = _state.update { it.copy(priceText = v, priceError = false) }
     fun setCurrencyCode(v: String) = _state.update { it.copy(currencyCode = v.uppercase()) }
 
-    /** Set address and coordinates together when the user picks an autocomplete result. */
-    fun setPlace(address: String, lat: Double, lng: Double) = _state.update {
-        it.copy(addressText = address, latitude = lat, longitude = lng)
-    }
+    /** Manual edits to the address field. Coordinates are intentionally preserved — if the
+     *  user is tweaking the address after picking a place, they're usually fixing a typo, not
+     *  invalidating the location. */
+    fun setAddressText(v: String) = _state.update { it.copy(addressText = v) }
 
-    fun clearLocation() = _state.update {
-        it.copy(addressText = "", latitude = null, longitude = null)
-    }
+    /** Apply a place the user picked from name-field autocomplete: replaces name, address, and
+     *  coordinates atomically. Clears the name error if it was set. */
+    fun applyPickedRestaurant(name: String, address: String, lat: Double, lng: Double) =
+        _state.update {
+            it.copy(
+                name = name,
+                nameError = false,
+                addressText = address,
+                latitude = lat,
+                longitude = lng,
+            )
+        }
 
     fun addPhotoPath(path: String) {
         addedPaths += path
@@ -157,6 +169,7 @@ class EntryEditViewModel(
             visitedOn = s.visitedOn,
             rating = s.rating,
             cuisine = s.cuisine,
+            meal = s.meal.trim(),
             notes = s.notes.trim(),
             companions = s.companions.trim(),
             dishPriceCents = priceCents,

@@ -1,6 +1,6 @@
 # Google Cloud Setup
 
-Walkthrough for setting up the Google Cloud project, APIs, and key that this app needs for its maps and address-autocomplete features. Assumes you're starting fresh with no existing project.
+Walkthrough for setting up the Google Cloud project, APIs, and key that this app needs for its map and restaurant-name autocomplete features. Assumes you're starting fresh with no existing project.
 
 After this you'll have:
 
@@ -37,16 +37,15 @@ The combination makes a surprise bill essentially impossible at personal-use sca
 - Google offers a **free trial credit** (currently $300 over 90 days for new accounts) — accept it; this stacks with the standing $200/mo Maps Platform credit
 - Back to **Billing** → **Link a billing account** → pick the one you just made → **Set account**
 
-## 4. Enable the three APIs you need
+## 4. Enable the two APIs you need
 
 - Left sidebar → **APIs & Services → Library**
 - Search `Maps SDK for Android` → click it → **Enable**
 - Back to Library → search `Places API (New)` (the one labelled **New**) → **Enable**
-- Back to Library → search `Places API` (the older one, **without** "New" in the name) → **Enable**
 
 Each takes ~30 seconds to provision.
 
-> **Why both Places APIs?** The Places SDK is mid-migration. Programmatic calls in our code go to the new API, but the polished fullscreen autocomplete widget we use for the address picker still hits the legacy endpoint under the hood. Without the legacy API enabled, tapping the address field returns immediately with `"You're calling a legacy API which is not enabled."` Both APIs share the same $200/month Maps Platform free credit, so this doesn't change your cost picture.
+> **Just the new Places API?** Yes — the app uses the programmatic `findAutocompletePredictions` / `fetchPlace` calls from the Places SDK, which go to the new API. The legacy Places API isn't needed.
 
 ## 5. Create the API key
 
@@ -79,7 +78,6 @@ Caps to set:
 | API | Quota | Cap |
 |---|---|---|
 | Places API (New) | Autocomplete requests per day (or similar per-day row) | `100` |
-| Places API | Autocomplete requests per day | `100` |
 | Maps SDK for Android | Map loads per day | `1000` |
 
 Quotas can take a few minutes to apply.
@@ -106,7 +104,6 @@ Back to the Credentials tab from step 5 (or **APIs & Services → Credentials** 
 - **API restrictions** → **Restrict key** → in the dropdown check **only**:
   - Maps SDK for Android
   - Places API (New)
-  - Places API
 - **Save** at the bottom
 
 When you eventually sign a release build, come back here and add the release keystore's SHA-1 as a second entry.
@@ -183,12 +180,11 @@ If `~/.android/debug.keystore` (or its Windows equivalent at `%USERPROFILE%\.and
   ./gradlew clean :app:assembleDebug
   ```
   (or run it from Android Studio.) This picks up the new key and the `BuildConfig` wiring.
-- Install and run the app → tap an Address field on a new restaurant → Google's autocomplete UI should launch.
-- If it doesn't launch, check Logcat for the failure status. Easiest path: in Android Studio, **View → Tool Windows → Logcat** (or **Alt+6**), then type `tag:AddressAutocomplete` into the filter bar at the top. Reproduce the bug and watch for a line like `W/AddressAutocomplete: Places autocomplete failed: <reason>`. From a terminal you can run the same thing with `adb logcat -s AddressAutocomplete` (use `"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"` if `adb` isn't on your PATH on Windows). The status message names what's missing:
-  - **"You're calling a legacy API which is not enabled"** → the autocomplete widget hits the legacy Places API; step 4 only enabled "Places API (New)". Enable the older **Places API** too (Library → search `Places API` without "New") and add it to the key's API restrictions (step 9).
-  - **"API has not been enabled"** → step 4 didn't take for the named API; re-enable it
-  - **"key not authorized" / "API_KEY_HTTP_REFERRER_BLOCKED"** → step 9's SHA-1 or package name doesn't match (most common cause: typo in SHA-1, or you're testing a release build with only the debug SHA-1 registered)
-  - **"This API key is not authorized to use this service"** → step 9's API restrictions list is missing one of the Places APIs
+- Install and run the app → on a new entry, type a restaurant name in the Name field → suggestions should drop down from the field after ~300 ms.
+- If no suggestions appear, check Logcat for the failure status. Easiest path: in Android Studio, **View → Tool Windows → Logcat** (or **Alt+6**), then type `tag:RestaurantNameField` into the filter bar at the top. Type into the Name field and watch for a line like `W/RestaurantNameField: Autocomplete query failed for '<name>': <reason>`. From a terminal you can run the same thing with `adb logcat -s RestaurantNameField` (use `"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"` if `adb` isn't on your PATH on Windows). The status message names what's missing:
+  - **"API has not been enabled"** → step 4 didn't take for Places API (New); re-enable it.
+  - **"key not authorized" / "API_KEY_HTTP_REFERRER_BLOCKED"** → step 9's SHA-1 or package name doesn't match (most common cause: typo in SHA-1, or you're testing a release build with only the debug SHA-1 registered).
+  - **"This API key is not authorized to use this service"** → step 9's API restrictions list is missing Places API (New).
 
 ---
 

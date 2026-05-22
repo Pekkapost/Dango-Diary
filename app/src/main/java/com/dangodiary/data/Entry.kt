@@ -19,6 +19,8 @@ data class Entry(
     /** ID from [CuisineCatalog]; null = unset. */
     val cuisine: String? = null,
 
+    val meal: String = "",
+
     val notes: String = "",
 
     val companions: String = "",
