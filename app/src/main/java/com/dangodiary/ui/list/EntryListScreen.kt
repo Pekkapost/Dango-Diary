@@ -569,13 +569,13 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         )
-                        val subtitle = listOfNotNull(
-                            CuisineCatalog.labelFor(entry.cuisine),
-                            extractCity(entry.addressText),
-                        ).joinToString("  ·  ")
-                        if (subtitle.isNotEmpty()) {
+                        // Subtitle = city only. Cuisine still drives the filter sheet but is
+                        // not surfaced on the row — keeps the line short and lets the city
+                        // breathe. The entry's cuisine field is unaffected.
+                        val city = extractCity(entry.addressText)
+                        if (!city.isNullOrEmpty()) {
                             Text(
-                                text = subtitle,
+                                text = city,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
