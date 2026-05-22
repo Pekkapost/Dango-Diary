@@ -165,16 +165,69 @@ Put the APK on your phone via any path you like — email it to yourself, drop i
 | **Theme picker** in Settings → switch between presets | DataStore reads + reactive theme work. |
 | **Detail screen → ⋮ → Search on Yelp** | Opens Yelp app (deep link) if installed, browser otherwise. |
 
-## Day-to-day, after code changes
+## Updating the app on your phone
 
-```powershell
-git pull                            # if changes came from elsewhere
-# edit code...
-.\gradlew.bat assembleRelease
-adb install -r app\build\outputs\apk\release\app-release.apk
-```
+Once the steps above have been done once, every future update is the same short loop. You do **not** need to touch the keystore, `keystore.properties`, or the API key again — they're set-and-forget. Just:
 
-Data persists across reinstalls because the signing key is the same. Icon doesn't change, settings stay, entries stay.
+1. **Get the latest code** (if changes came from elsewhere, like a Claude session pushing commits, or another machine):
+
+   ```powershell
+   cd C:\path\to\Dango-Diary
+   git pull
+   ```
+
+2. **Plug in your phone via USB** (USB debugging already enabled from initial install) and confirm it's detected:
+
+   ```powershell
+   adb devices
+   ```
+
+   Should list your phone. If not, replug the cable, re-accept the "Allow USB debugging" prompt if it shows up, or use the bundled adb path:
+
+   ```powershell
+   & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices
+   ```
+
+3. **Build the release APK**:
+
+   ```powershell
+   .\gradlew.bat assembleRelease
+   ```
+
+   First build of the day is ~30–60 s; incremental rebuilds after small changes are usually under 10 s.
+
+4. **Install over the existing copy**:
+
+   ```powershell
+   adb install -r app\build\outputs\apk\release\app-release.apk
+   ```
+
+   `-r` reinstalls in place. Android replaces the previous APK with the new one and keeps **all existing data** — your entries, settings, theme, photos, dish lists, legacy tags — because the new APK is signed with the same release keystore. `Success` means done.
+
+5. **Open the app on the phone** to confirm the update landed. Quick check: a recently-added entry from before the update is still in the list.
+
+### Schema changes specifically
+
+When an update bumps the Room database version (`@Database(version = N, ...)`) and adds a `MIGRATION_N-1_N`, Android runs the migration automatically the first time the new APK opens. You don't run anything by hand. Existing entries get the new columns / new shape; nothing is wiped.
+
+If a migration is ever broken, the app will crash on open with a Room error in Logcat (`A migration from N-1 to N was required but not found`). That's a code bug to fix in the migration, not something you'd be expected to work around from the install side.
+
+### Updating from a different machine
+
+If you build on a machine that doesn't already have the release keystore set up, you need to put it back in place once:
+
+1. Copy `release.keystore` from your backup into the project root.
+2. Copy or recreate `keystore.properties` in the project root (per step 3 of the initial setup).
+
+Then the same `.\gradlew.bat assembleRelease` + `adb install -r ...` works.
+
+### What you do NOT need to do on every update
+
+- ❌ Regenerate the keystore
+- ❌ Add a new SHA-1 to the Google API key
+- ❌ Uninstall the existing app first
+- ❌ Touch `local.properties` or `keystore.properties`
+- ❌ Re-enable USB debugging on the phone
 
 ## Common gotchas
 
