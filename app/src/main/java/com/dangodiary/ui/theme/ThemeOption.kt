@@ -10,96 +10,28 @@ import androidx.compose.ui.graphics.Color
  *
  * Declaration order is the order shown in the Settings screen. Each option carries a
  * representative [swatch] (rendered as a coloured dot beside the radio row) and a hand-picked
- * light + dark [ColorScheme] pair. [SYSTEM] uses the default Material 3 schemes.
+ * light + dark [ColorScheme] pair.
  */
 enum class ThemeOption(
     val displayName: String,
     val swatch: Color,
     val isAppDefault: Boolean = false,
 ) {
+    PURPLE("Purple", Color(0xFF6A1B9A), isAppDefault = true),
+    BROWN("Brown", Color(0xFF8D6E63)),
     BLUE("Blue", Color(0xFF1976D2)),
-    BROWN("Brown", Color(0xFF6D4C41)),
-    PURPLE("Purple", Color(0xFF6A1B9A)),
-    PINK("Pink", Color(0xFFFDA2F5), isAppDefault = true),
     RED("Red", Color(0xFFD32F2F)),
-    SYSTEM("System default", Color.Unspecified);
+    PINK("Pink", Color(0xFFFDA2F5));
 
     companion object {
-        /** Unknown / unrecognised names (including legacy values like "GREEN") fall back to
-         *  the app default, [PINK]. */
+        /** Unknown / unrecognised names (legacy "SYSTEM", "GREEN", etc.) fall back to the
+         *  app default, [PURPLE]. */
         fun fromName(name: String?): ThemeOption =
-            entries.firstOrNull { it.name == name } ?: PINK
+            entries.firstOrNull { it.name == name } ?: PURPLE
     }
 }
 
-private val SystemLight = lightColorScheme()
-private val SystemDark = darkColorScheme()
-
-// ---- Blue ----------------------------------------------------------------------------------
-
-private val BlueLight = lightColorScheme(
-    primary = Color(0xFF1976D2),
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFD1E4FF),
-    onPrimaryContainer = Color(0xFF001D36),
-    secondary = Color(0xFF535F70),
-    onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFD7E3F7),
-    onSecondaryContainer = Color(0xFF101C2B),
-    tertiary = Color(0xFF6B5778),
-    onTertiary = Color(0xFFFFFFFF),
-    background = Color(0xFFF8FAFE),
-    surface = Color(0xFFF8FAFE),
-    surfaceVariant = Color(0xFFDFE3EB),
-    onSurfaceVariant = Color(0xFF43474E),
-)
-
-private val BlueDark = darkColorScheme(
-    primary = Color(0xFF9ECAFF),
-    onPrimary = Color(0xFF003259),
-    primaryContainer = Color(0xFF00497F),
-    onPrimaryContainer = Color(0xFFD1E4FF),
-    secondary = Color(0xFFBBC7DB),
-    onSecondary = Color(0xFF253140),
-    background = Color(0xFF101418),
-    surface = Color(0xFF101418),
-    surfaceVariant = Color(0xFF43474E),
-    onSurfaceVariant = Color(0xFFC3C7CF),
-)
-
-// ---- Brown ---------------------------------------------------------------------------------
-
-private val BrownLight = lightColorScheme(
-    primary = Color(0xFF6D4C41),
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFFFDBC8),
-    onPrimaryContainer = Color(0xFF2A1708),
-    secondary = Color(0xFF77574A),
-    onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFFFDBC8),
-    onSecondaryContainer = Color(0xFF2C160B),
-    tertiary = Color(0xFF655F31),
-    onTertiary = Color(0xFFFFFFFF),
-    background = Color(0xFFFFF8F5),
-    surface = Color(0xFFFFF8F5),
-    surfaceVariant = Color(0xFFF3DDD2),
-    onSurfaceVariant = Color(0xFF52433C),
-)
-
-private val BrownDark = darkColorScheme(
-    primary = Color(0xFFFFB694),
-    onPrimary = Color(0xFF4F2A19),
-    primaryContainer = Color(0xFF6A3F2D),
-    onPrimaryContainer = Color(0xFFFFDBC8),
-    secondary = Color(0xFFE7BEAA),
-    onSecondary = Color(0xFF442A1F),
-    background = Color(0xFF1A120E),
-    surface = Color(0xFF1A120E),
-    surfaceVariant = Color(0xFF52433C),
-    onSurfaceVariant = Color(0xFFD7C2B7),
-)
-
-// ---- Purple --------------------------------------------------------------------------------
+// ---- Purple (app default) ------------------------------------------------------------------
 
 private val PurpleLight = lightColorScheme(
     primary = Color(0xFF6A1B9A),
@@ -131,37 +63,71 @@ private val PurpleDark = darkColorScheme(
     onSurfaceVariant = Color(0xFFCAC4D0),
 )
 
-// ---- Pink (app default) --------------------------------------------------------------------
-// Primary is the user's canonical pink: #FDA2F5. It's a light pastel, so onPrimary stays dark.
+// ---- Brown ---------------------------------------------------------------------------------
+// primaryContainer is the FAB background in M3 — bumped from a peach (#FFDBC8) to a clear
+// medium brown (#A1887F, Material Brown 300) so the "Add restaurant" FAB actually reads as
+// brown rather than washed-out cream. onPrimaryContainer stays dark for label contrast.
 
-private val PinkLight = lightColorScheme(
-    primary = Color(0xFFFDA2F5),
-    onPrimary = Color(0xFF2A0029),
-    primaryContainer = Color(0xFFFFD7FB),
-    onPrimaryContainer = Color(0xFF40003D),
-    secondary = Color(0xFF8B5A86),
+private val BrownLight = lightColorScheme(
+    primary = Color(0xFF6D4C41),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFA1887F),
+    onPrimaryContainer = Color(0xFF2A1708),
+    secondary = Color(0xFF77574A),
     onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFFFD8F2),
-    onSecondaryContainer = Color(0xFF36082F),
-    tertiary = Color(0xFFB44A6F),
+    secondaryContainer = Color(0xFFFFDBC8),
+    onSecondaryContainer = Color(0xFF2C160B),
+    tertiary = Color(0xFF655F31),
     onTertiary = Color(0xFFFFFFFF),
-    background = Color(0xFFFFF8FB),
-    surface = Color(0xFFFFF8FB),
-    surfaceVariant = Color(0xFFF3DDEC),
-    onSurfaceVariant = Color(0xFF51434C),
+    background = Color(0xFFFFF8F5),
+    surface = Color(0xFFFFF8F5),
+    surfaceVariant = Color(0xFFF3DDD2),
+    onSurfaceVariant = Color(0xFF52433C),
 )
 
-private val PinkDark = darkColorScheme(
-    primary = Color(0xFFFDA2F5),
-    onPrimary = Color(0xFF4A0046),
-    primaryContainer = Color(0xFF6B1F65),
-    onPrimaryContainer = Color(0xFFFFD7FB),
-    secondary = Color(0xFFF7B3E8),
-    onSecondary = Color(0xFF4B0746),
-    background = Color(0xFF1E1119),
-    surface = Color(0xFF1E1119),
-    surfaceVariant = Color(0xFF51434C),
-    onSurfaceVariant = Color(0xFFD5C2CE),
+private val BrownDark = darkColorScheme(
+    primary = Color(0xFFFFB694),
+    onPrimary = Color(0xFF4F2A19),
+    primaryContainer = Color(0xFF8D6E63),
+    onPrimaryContainer = Color(0xFFFFE9DC),
+    secondary = Color(0xFFE7BEAA),
+    onSecondary = Color(0xFF442A1F),
+    background = Color(0xFF1A120E),
+    surface = Color(0xFF1A120E),
+    surfaceVariant = Color(0xFF52433C),
+    onSurfaceVariant = Color(0xFFD7C2B7),
+)
+
+// ---- Blue ----------------------------------------------------------------------------------
+
+private val BlueLight = lightColorScheme(
+    primary = Color(0xFF1976D2),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFD1E4FF),
+    onPrimaryContainer = Color(0xFF001D36),
+    secondary = Color(0xFF535F70),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFD7E3F7),
+    onSecondaryContainer = Color(0xFF101C2B),
+    tertiary = Color(0xFF6B5778),
+    onTertiary = Color(0xFFFFFFFF),
+    background = Color(0xFFF8FAFE),
+    surface = Color(0xFFF8FAFE),
+    surfaceVariant = Color(0xFFDFE3EB),
+    onSurfaceVariant = Color(0xFF43474E),
+)
+
+private val BlueDark = darkColorScheme(
+    primary = Color(0xFF9ECAFF),
+    onPrimary = Color(0xFF003259),
+    primaryContainer = Color(0xFF00497F),
+    onPrimaryContainer = Color(0xFFD1E4FF),
+    secondary = Color(0xFFBBC7DB),
+    onSecondary = Color(0xFF253140),
+    background = Color(0xFF101418),
+    surface = Color(0xFF101418),
+    surfaceVariant = Color(0xFF43474E),
+    onSurfaceVariant = Color(0xFFC3C7CF),
 )
 
 // ---- Red -----------------------------------------------------------------------------------
@@ -196,12 +162,44 @@ private val RedDark = darkColorScheme(
     onSurfaceVariant = Color(0xFFD8C2BE),
 )
 
+// ---- Pink ----------------------------------------------------------------------------------
+// Primary is the user's canonical pink #FDA2F5 — a light pastel, so onPrimary stays dark.
+
+private val PinkLight = lightColorScheme(
+    primary = Color(0xFFFDA2F5),
+    onPrimary = Color(0xFF2A0029),
+    primaryContainer = Color(0xFFFFD7FB),
+    onPrimaryContainer = Color(0xFF40003D),
+    secondary = Color(0xFF8B5A86),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFFFD8F2),
+    onSecondaryContainer = Color(0xFF36082F),
+    tertiary = Color(0xFFB44A6F),
+    onTertiary = Color(0xFFFFFFFF),
+    background = Color(0xFFFFF8FB),
+    surface = Color(0xFFFFF8FB),
+    surfaceVariant = Color(0xFFF3DDEC),
+    onSurfaceVariant = Color(0xFF51434C),
+)
+
+private val PinkDark = darkColorScheme(
+    primary = Color(0xFFFDA2F5),
+    onPrimary = Color(0xFF4A0046),
+    primaryContainer = Color(0xFF6B1F65),
+    onPrimaryContainer = Color(0xFFFFD7FB),
+    secondary = Color(0xFFF7B3E8),
+    onSecondary = Color(0xFF4B0746),
+    background = Color(0xFF1E1119),
+    surface = Color(0xFF1E1119),
+    surfaceVariant = Color(0xFF51434C),
+    onSurfaceVariant = Color(0xFFD5C2CE),
+)
+
 /** Returns the [ColorScheme] for the given theme + dark-mode preference. */
 fun colorSchemeFor(option: ThemeOption, dark: Boolean): ColorScheme = when (option) {
-    ThemeOption.SYSTEM -> if (dark) SystemDark else SystemLight
-    ThemeOption.BLUE -> if (dark) BlueDark else BlueLight
-    ThemeOption.BROWN -> if (dark) BrownDark else BrownLight
     ThemeOption.PURPLE -> if (dark) PurpleDark else PurpleLight
-    ThemeOption.PINK -> if (dark) PinkDark else PinkLight
+    ThemeOption.BROWN -> if (dark) BrownDark else BrownLight
+    ThemeOption.BLUE -> if (dark) BlueDark else BlueLight
     ThemeOption.RED -> if (dark) RedDark else RedLight
+    ThemeOption.PINK -> if (dark) PinkDark else PinkLight
 }

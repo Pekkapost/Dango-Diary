@@ -184,12 +184,7 @@ private fun ThemeRow(
                 .padding(start = 8.dp)
                 .size(20.dp)
                 .clip(CircleShape)
-                .background(
-                    // SYSTEM has no fixed swatch — show whatever the active scheme's primary
-                    // is right now so the swatch tracks the device's dynamic colour.
-                    if (option == ThemeOption.SYSTEM) MaterialTheme.colorScheme.primary
-                    else option.swatch
-                )
+                .background(option.swatch)
                 .border(
                     1.dp,
                     MaterialTheme.colorScheme.outlineVariant,

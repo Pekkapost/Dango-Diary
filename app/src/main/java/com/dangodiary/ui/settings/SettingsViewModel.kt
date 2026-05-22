@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 data class SettingsState(
     val defaultCurrency: String = AppSettings.FALLBACK_CURRENCY,
     val draftDefaultCurrency: String = AppSettings.FALLBACK_CURRENCY,
-    val theme: ThemeOption = ThemeOption.SYSTEM,
+    val theme: ThemeOption = ThemeOption.PURPLE,
     val hideTotalPrice: Boolean = false,
     val loading: Boolean = true,
     val saved: Boolean = false,

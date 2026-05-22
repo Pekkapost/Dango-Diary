@@ -23,10 +23,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.util.UUID
 
 /** One row in the dish list as the user is editing it. The price is held as the raw text the
- *  user typed; we only parse it at save time so partial input ("12.") doesn't blow up. */
+ *  user typed; we only parse it at save time so partial input ("12.") doesn't blow up.
+ *
+ *  [id] is a per-row UUID used as a stable Compose key by the reorderable list — without it,
+ *  two equal drafts (e.g. two blank rows) would collide. It's session-only; not persisted. */
 data class DishDraft(
+    val id: String = UUID.randomUUID().toString(),
     val name: String = "",
     val priceText: String = "",
     val priceError: Boolean = false,
@@ -140,6 +145,10 @@ class EntryEditViewModel(
 
     fun addDish() = _state.update { it.copy(dishes = it.dishes + DishDraft()) }
 
+    fun moveDish(fromIndex: Int, toIndex: Int) = _state.update { st ->
+        st.copy(dishes = st.dishes.moved(fromIndex, toIndex))
+    }
+
     fun removeDish(index: Int) = _state.update {
         // Always keep at least one row so the form has somewhere to type. Clearing the last
         // remaining dish is equivalent to leaving it blank.
@@ -191,6 +200,10 @@ class EntryEditViewModel(
 
     fun setPhotoCaption(path: String, caption: String) = _state.update { st ->
         st.copy(photos = st.photos.map { if (it.path == path) it.copy(caption = caption) else it })
+    }
+
+    fun movePhoto(fromIndex: Int, toIndex: Int) = _state.update { st ->
+        st.copy(photos = st.photos.moved(fromIndex, toIndex))
     }
 
     fun removePhoto(path: String) {
@@ -287,4 +300,15 @@ class EntryEditViewModel(
                     ) as T
             }
     }
+}
+
+/** Returns a new list with the element at [fromIndex] moved to [toIndex]. Out-of-range or
+ *  no-op moves return the receiver unchanged. */
+private fun <T> List<T>.moved(fromIndex: Int, toIndex: Int): List<T> {
+    if (fromIndex == toIndex) return this
+    if (fromIndex !in indices || toIndex !in indices) return this
+    val mutable = toMutableList()
+    val item = mutable.removeAt(fromIndex)
+    mutable.add(toIndex, item)
+    return mutable
 }

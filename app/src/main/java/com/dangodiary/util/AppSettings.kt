@@ -54,10 +54,10 @@ class AppSettings(private val dataStore: DataStore<Preferences>) {
 
     companion object {
         const val FALLBACK_CURRENCY = "USD"
-        // Pink is the app default — see ThemeOption.PINK. Users who explicitly pick something
-        // else have their choice persisted; new installs and unrecognised stored values land
-        // here.
-        const val FALLBACK_THEME = "PINK"
+        // Purple is the app default — see ThemeOption.PURPLE. Users who explicitly pick
+        // something else have their choice persisted; new installs and unrecognised stored
+        // values (legacy "SYSTEM" / "GREEN" / "PINK"-as-default) land here.
+        const val FALLBACK_THEME = "PURPLE"
         private val KEY_DEFAULT_CURRENCY = stringPreferencesKey("default_currency")
         private val KEY_THEME = stringPreferencesKey("theme")
         private val KEY_HIDE_TOTAL_PRICE = booleanPreferencesKey("hide_total_price")

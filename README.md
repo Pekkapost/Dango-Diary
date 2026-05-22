@@ -90,10 +90,13 @@ With the emulator running, click the green **▶ Run 'app'** button in the toolb
 Tap **+ Add restaurant**, fill in the form, tap **Save**. The entry appears in the list. Tap the entry to see the detail view; the edit and delete actions are in the top app bar.
 
 Things to know on the emulator:
-- **Camera** uses a synthetic test image, not a real photo. Use **Choose from gallery** for realistic photo testing — drag a JPG from your desktop onto the emulator window to add it to the gallery first.
-- **Name autocomplete** needs the Places API (New) enabled on your key plus the emulator's debug SHA-1 added to the key restriction (see [CLOUD-SETUP.md](CLOUD-SETUP.md) step 9). Without that, typing in the Name field shows no suggestions — manual entry still works.
-- **Detail map preview** centers on the saved pin. If you haven't picked an address yet, the map section is hidden — there's no separate map picker in the edit flow.
-- **Hot reload** — when you change Kotlin code, just press ▶ again; Android Studio rebuilds and reinstalls in a few seconds.
+
+| Feature | Note |
+|---|---|
+| **Camera** | Uses a synthetic test image, not a real photo. For realistic photo testing use **Choose from gallery** — drag a JPG from your desktop onto the emulator window to add it to the gallery first. |
+| **Name autocomplete** | Needs the Places API (New) enabled on your key plus the emulator's debug SHA-1 added to the key restriction (see [CLOUD-SETUP.md](CLOUD-SETUP.md) step 9). Without that, typing in the Name field shows no suggestions — manual entry still works. |
+| **Detail map preview** | Centers on the saved pin. If you haven't picked an address yet, the map section is hidden — there's no separate map picker in the edit flow. |
+| **Hot reload** | When you change Kotlin code, just press ▶ again; Android Studio rebuilds and reinstalls in a few seconds. |
 
 ## Setup (command line, without Android Studio)
 
@@ -150,23 +153,64 @@ adb logcat -s DangoDiaryApp PhotoStorage
 
 ## Features
 
-| Surface | Description |
+| Surface | Summary |
 |---|---|
-| **List screen** | All entries you've recorded, with text search, sort (recency / rating / name / **nearest first**), and a filter bottom sheet (minimum rating slider, **cuisine** filter — pick a specific cuisine or a whole supertype like Cafés, has-photo toggle). Each row shows photo, name, cuisine + city, half-star rating, date, and total price (hidden when **Hide total price** is enabled in Settings). The "Nearest first" sort prompts for a coarse-location permission on first use; entries without coordinates sink to the bottom of the distance sort. |
-| **Add/edit form** | Grouped into four sections. **Restaurant Information**: Restaurant Name (Google Places autocomplete — typing the restaurant name suggests matching places and auto-fills the address + map pin on pick), cuisine + date (paired row), half-star rating (1–5 in 0.5 increments), address (auto-filled from the name pick but editable, or typed manually). **Dishes**: one or more dishes per entry — each is a Dish name + Dish price row; an "Add another dish" button appends rows. Currency defaults to the app-wide setting. **Company & Notes**: Companions + free-form notes. **Photos**: capture from camera or pick from gallery; each photo can have an optional caption. |
-| **Detail screen** | Header with name + stars + cuisine·date·total-price subtitle, then sections: Location (address + embedded read-only map + "Open in Maps"), Dishes (each with its price), Companions, Notes, and photos at the bottom (captions render under each thumbnail when present). Sections only appear when they have content. |
-| **Settings** | Top-bar gear icon on the list screen opens a settings screen with three sections. **Theme**: pick a preset (Blue / Brown / Purple / Pink (app default, `#FDA2F5`) / Red / System default) — each row shows a colour swatch and the change applies live across the whole app. **Display**: toggle to hide per-entry totals on the list and detail subtitle (per-dish prices are still visible in the dish list). **Defaults**: default currency code for new entries (existing entries keep their saved currency). |
+| **List screen** | Search · sort (recency / rating / name / nearest) · filter bottom sheet (rating slider, cuisine, has-photo). Rows show photo, name, cuisine·city, rating, date, total. |
+| **Add/edit form** | Four sections: **Restaurant Information** · **Dishes** · **Company & Notes** · **Photos**. |
+| **Detail screen** | Header + sections (Location, Dishes, Companions, Notes, Photos). Sections appear only when populated. |
+| **Settings** | Three sections: **Theme** · **Display** · **Defaults**. |
+
+### List screen
+
+| Element | Behaviour |
+|---|---|
+| **Search** | Text query against name, notes, companions, address. |
+| **Sort menu** | Recently visited · Highest rated · Name (A–Z) · Nearest first. Nearest prompts for a coarse-location permission on first use; entries without coordinates sink to the bottom. |
+| **Filter sheet** | Minimum-rating slider, cuisine filter (specific cuisine or a whole supertype like Cafés), has-photo switch. |
+| **Row** | Photo · name · cuisine + city · half-star rating · date · total price. Total is hidden when **Settings → Hide total price** is on. |
+
+### Add/edit form
+
+| Section | Fields |
+|---|---|
+| **Restaurant Information** | Restaurant Name (Google Places autocomplete — picking a suggestion auto-fills address + map pin); cuisine + date in a paired row; half-star rating (1–5 in 0.5 increments); address (editable, auto-filled or typed manually). |
+| **Dishes** | One or more dishes per entry. Each row: Dish name + Dish price. "Add another dish" appends rows. Drag a row's handle to reorder. Currency defaults to the app-wide setting. |
+| **Company & Notes** | Companions + free-form notes. |
+| **Photos** | Capture from camera or pick from gallery. Each photo has an optional caption. Drag a row's handle to reorder. |
+
+### Detail screen
+
+| Section | Content |
+|---|---|
+| **Header** | Name (bold, in app bar) · half-star rating · cuisine · date · total price subtitle. Total price hidden when the setting is on. |
+| **Location** | Address text; expand icon reveals an embedded read-only map; map icon opens the location in external Maps. |
+| **Dishes** | One row per saved dish — dish name on the left, price on the right. |
+| **Companions** | Free text. |
+| **Notes** | Free text. |
+| **Photos** | 3-column grid. Captions render centred under each thumbnail when present. |
+
+### Settings
+
+| Section | Knob |
+|---|---|
+| **Theme** | Pick a preset (Purple (app default) / Brown / Blue / Red / Pink `#FDA2F5`). Each row shows a colour swatch; change applies live. |
+| **Display** | Hide total price — hides per-entry totals on the list and the detail subtitle. Per-dish prices stay visible in the Dishes section. |
+| **Defaults** | Default currency code for new entries. Existing entries keep their saved currency. |
 
 All data is stored locally in a Room database at the app's private data directory. Photos are copied into the app's `filesDir/photos/`. Nothing leaves the device except Places autocomplete queries while you're typing a restaurant name.
 
 ## Limitations
 
-- Requires a Google Maps SDK key for map tiles **and** Places API (New) for restaurant-name autocomplete. Without the key, the Name field still works for manual entry but won't suggest matches, and the detail-screen map is blank — see [CLOUD-SETUP.md](CLOUD-SETUP.md).
-- No cloud sync, no export/import. Backups are the user's responsibility (Android's auto-backup will capture the DB and photos).
-- Places autocomplete is biased by the device's IP, with no explicit location restriction — if you're entering a restaurant from another city by name alone, you may need to add a city name to disambiguate, or pick a similar-named place and edit the address manually.
-- Currency is per-row and free-text; no validation beyond "is this a known ISO 4217 code". Unknown codes fall back to the device default at format time.
-- Cuisine catalog is hardcoded in [Cuisine.kt](app/src/main/java/com/dangodiary/data/Cuisine.kt); there's no UI to add custom cuisines.
+| Area | Notes |
+|---|---|
+| **Google Cloud key** | Required for map tiles + Places API (New) restaurant-name autocomplete. Without it the Name field still works for manual entry but won't suggest matches, and the detail-screen map is blank. See [CLOUD-SETUP.md](CLOUD-SETUP.md). |
+| **Backups** | No cloud sync, no export/import. Backups are the user's responsibility — Android's auto-backup will capture the DB and photos. |
+| **Autocomplete bias** | Places autocomplete is biased by the device's IP with no explicit location restriction. Entering a restaurant from another city by name alone may need a city qualifier, or pick a similar-named place and edit the address manually. |
+| **Currency** | Per-row and free-text; no validation beyond "is this a known ISO 4217 code". Unknown codes fall back to the device default at format time. |
+| **Cuisine catalog** | Hardcoded in [Cuisine.kt](app/src/main/java/com/dangodiary/data/Cuisine.kt); no UI to add custom cuisines. |
 
 ## Authors
 
-- [@Pekkapost](https://github.com/Pekkapost) — Author
+| Name | Role |
+|---|---|
+| [@Pekkapost](https://github.com/Pekkapost) | Author |

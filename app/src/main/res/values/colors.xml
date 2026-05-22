@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App icon background. Pink #FDA2F5 — the canonical Dango Diary pink. -->
-    <color name="ic_launcher_background">#FFFDA2F5</color>
+    <!-- App icon background. Deep purple #6A1B9A — matches the Purple app-default theme so
+         the launcher icon and the in-app primary colour read as the same brand. -->
+    <color name="ic_launcher_background">#FF6A1B9A</color>
 </resources>

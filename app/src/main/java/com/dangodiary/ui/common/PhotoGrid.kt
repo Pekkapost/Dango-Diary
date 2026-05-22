@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -41,12 +42,15 @@ fun PhotoGrid(
     captionFor: ((String) -> String)? = null,
 ) {
     if (paths.isEmpty()) return
+    // 3 thumbnails per row regardless of screen width. Adaptive sizing had a 120 dp minimum
+    // which collapsed to 2 columns on typical phone widths; a fixed 3 makes the grid look
+    // consistent and lines up nicely with the section's left/right padding.
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 120.dp),
+        columns = GridCells.Fixed(3),
         modifier = modifier.fillMaxWidth(),
     ) {
         items(paths, key = { it }) { path ->
-            Column(modifier = Modifier.padding(4.dp)) {
+            Column(modifier = Modifier.padding(6.dp)) {
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -79,9 +83,12 @@ fun PhotoGrid(
                         text = caption,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
                     )
                 }
             }

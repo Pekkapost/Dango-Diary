@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -61,6 +62,7 @@ import com.dangodiary.ui.common.CuisinePickerField
 import com.dangodiary.ui.common.DatePickerField
 import com.dangodiary.ui.common.RatingStars
 import com.dangodiary.ui.common.RestaurantNameField
+import sh.calvin.reorderable.ReorderableColumn
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -204,13 +206,20 @@ fun EntryEditScreen(
             // -----------------------------------------------------------------
             SectionHeader(stringResource(R.string.edit_section_dishes))
 
-            s.dishes.forEachIndexed { index, draft ->
+            ReorderableColumn(
+                list = s.dishes,
+                onSettle = { from, to -> vm.moveDish(from, to) },
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) { index, draft, _ ->
                 DishRow(
                     draft = draft,
                     showRemove = s.dishes.size > 1,
                     onNameChange = { vm.setDishName(index, it) },
                     onPriceChange = { vm.setDishPrice(index, it) },
                     onRemove = { vm.removeDish(index) },
+                    dragHandleModifier = Modifier.draggableHandle(),
+                    dragHandleDescription = stringResource(R.string.edit_reorder_dish),
                 )
             }
 
@@ -281,11 +290,18 @@ fun EntryEditScreen(
                 }
             }
 
-            s.photos.forEach { photo ->
+            ReorderableColumn(
+                list = s.photos,
+                onSettle = { from, to -> vm.movePhoto(from, to) },
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) { _, photo, _ ->
                 PhotoEditRow(
                     photo = photo,
                     onCaptionChange = { vm.setPhotoCaption(photo.path, it) },
                     onRemove = { vm.removePhoto(photo.path) },
+                    dragHandleModifier = Modifier.draggableHandle(),
+                    dragHandleDescription = stringResource(R.string.edit_reorder_photo),
                 )
             }
 
@@ -331,12 +347,18 @@ private fun PhotoEditRow(
     photo: Photo,
     onCaptionChange: (String) -> Unit,
     onRemove: () -> Unit,
+    dragHandleModifier: Modifier = Modifier,
+    dragHandleDescription: String? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
+        DragHandleIcon(
+            modifier = dragHandleModifier,
+            contentDescription = dragHandleDescription,
+        )
         AsyncImage(
             model = File(photo.path),
             contentDescription = null,
@@ -375,12 +397,18 @@ private fun DishRow(
     onNameChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
     onRemove: () -> Unit,
+    dragHandleModifier: Modifier = Modifier,
+    dragHandleDescription: String? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
+        DragHandleIcon(
+            modifier = dragHandleModifier,
+            contentDescription = dragHandleDescription,
+        )
         OutlinedTextField(
             value = draft.name,
             onValueChange = onNameChange,
@@ -482,4 +510,23 @@ private fun RatingFieldBox(
             )
         }
     }
+}
+
+/** Leading drag handle for a reorderable row. The caller wires the
+ *  [sh.calvin.reorderable.ReorderableCollectionItemScope.draggableHandle] modifier into
+ *  [modifier] from the ReorderableColumn scope; this composable just renders the icon at a
+ *  fixed size with vertical padding to align with the OutlinedTextField content row. */
+@Composable
+private fun DragHandleIcon(
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+) {
+    Icon(
+        imageVector = Icons.Filled.DragHandle,
+        contentDescription = contentDescription,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+            .padding(top = 16.dp, bottom = 0.dp)
+            .size(24.dp),
+    )
 }

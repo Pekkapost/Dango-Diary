@@ -46,6 +46,8 @@
     <string name="edit_field_address">Address</string>
     <string name="edit_add_dish">Add another dish</string>
     <string name="edit_remove_dish">Remove dish</string>
+    <string name="edit_reorder_dish">Drag to reorder dish</string>
+    <string name="edit_reorder_photo">Drag to reorder photo</string>
     <string name="edit_field_photo_caption">Caption (optional)</string>
     <string name="edit_remove_photo">Remove photo</string>
 

@@ -295,8 +295,11 @@ private fun DetailBody(
             PhotoGrid(
                 paths = photos.map { it.path },
                 captionFor = { path -> photos.firstOrNull { it.path == path }?.caption.orEmpty() },
+                // Match the horizontal/vertical padding the other DetailSections use, so the
+                // grid doesn't sit flush against the divider or screen edges.
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 12.dp)
                     .height(280.dp),
             )
         }

@@ -19,7 +19,7 @@
         android:pathData="M47,44 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 z" />
     <!-- Bottom ball at (54, 60) -->
     <path
-        android:fillColor="#FFE6DC"
+        android:fillColor="#FAEAD0"
         android:pathData="M47,60 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 z" />
     <!-- Open book — left page (white trapezoid sloping from centre crease to outer edge) -->
     <path
