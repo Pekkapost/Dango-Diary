@@ -151,6 +151,28 @@ fun EntryListScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
+        // First-launch empty state: no entries AND no active filters/query. Render as a
+        // standalone centred Box on the full viewport (skip the search bar + filter chips,
+        // which are useless when there's nothing to search), so the text sits in the visual
+        // middle of the app rather than below the search bar's bottom edge.
+        val trulyEmpty = items.isEmpty() && !filters.hasAny
+        if (trulyEmpty) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.list_empty),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(32.dp),
+                )
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -169,13 +191,14 @@ fun EntryListScreen(
             ActiveFilterChips(filters, vm)
 
             if (items.isEmpty()) {
-                val emptyMessage =
-                    if (filters.query.isNotBlank() || filters.hasAny) R.string.list_no_matches
-                    else R.string.list_empty
+                // Filter or query excludes everything. Keep the search bar + chips visible
+                // (the user needs them to clear/adjust the filter); centring is within the
+                // remaining space below them, which is the correct framing here.
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = stringResource(emptyMessage),
+                        text = stringResource(R.string.list_no_matches),
                         style = MaterialTheme.typography.bodyLarge,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         modifier = Modifier.padding(32.dp),
                     )
                 }
@@ -537,6 +560,8 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                             text = entry.name,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         )
                         val subtitle = listOfNotNull(
                             CuisineCatalog.labelFor(entry.cuisine),

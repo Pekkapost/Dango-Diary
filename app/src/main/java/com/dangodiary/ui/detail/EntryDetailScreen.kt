@@ -95,6 +95,8 @@ fun EntryDetailScreen(
                     Text(
                         entry?.name ?: stringResource(R.string.detail_title),
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 },
                 navigationIcon = {
