@@ -155,12 +155,12 @@ adb logcat -s DangoDiaryApp PhotoStorage
 
 | Surface | Summary |
 |---|---|
-| **List screen** | Search · sort (recency / rating / name / nearest) · filter bottom sheet (rating slider, cuisine, has-photo). Rows show photo, name, cuisine·city, rating, date, total. |
-| **Add/edit form** | Four sections: **Restaurant Information** · **Dishes** · **Company & Notes** · **Photos**. |
-| **Detail screen** | Header + sections (Location, Dishes, Companions, Notes, Photos). Sections appear only when populated. |
+| **List Screen** | Search · sort (recency / rating / name / nearest) · filter bottom sheet (rating slider, cuisine, has-photo). Rows show photo, name, cuisine·city, rating, date, total. |
+| **Add/Edit Form** | Four sections: **Restaurant Information** · **Dishes** · **Company & Notes** · **Photos**. |
+| **Detail Screen** | Header + sections (Location, Dishes, Companions, Notes, Photos). Sections appear only when populated. |
 | **Settings** | Three sections: **Theme** · **Display** · **Defaults**. |
 
-### List screen
+### List Screen
 
 | Element | Behaviour |
 |---|---|
@@ -169,7 +169,7 @@ adb logcat -s DangoDiaryApp PhotoStorage
 | **Filter sheet** | Minimum-rating slider, cuisine filter (specific cuisine or a whole supertype like Cafés), has-photo switch. |
 | **Row** | Photo · name · cuisine + city · half-star rating · date · total price. Total is hidden when **Settings → Hide total price** is on. |
 
-### Add/edit form
+### Add/Edit Form
 
 | Section | Fields |
 |---|---|
@@ -178,7 +178,7 @@ adb logcat -s DangoDiaryApp PhotoStorage
 | **Company & Notes** | Companions + free-form notes. |
 | **Photos** | Capture from camera or pick from gallery. Each photo has an optional caption. Drag a row's handle to reorder. |
 
-### Detail screen
+### Detail Screen
 
 | Section | Content |
 |---|---|

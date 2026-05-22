@@ -3,7 +3,6 @@ package com.dangodiary.ui.edit
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -48,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -82,6 +81,11 @@ fun EntryEditScreen(
     val s by vm.state.collectAsStateWithLifecycle()
     var photoMenuOpen by remember { mutableStateOf(false) }
     var pendingCameraPath by remember { mutableStateOf<String?>(null) }
+    // Section-level "edit list" toggles. When on, every row in the section shows its drag
+    // handle + × button so the user can reorder or remove. When off (the default), rows are
+    // clean — just the inputs.
+    var editingDishes by remember { mutableStateOf(false) }
+    var editingPhotos by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture(),
@@ -216,6 +220,7 @@ fun EntryEditScreen(
             ) { index, draft, _ ->
                 DishRow(
                     draft = draft,
+                    revealed = editingDishes,
                     showRemove = s.dishes.size > 1,
                     onNameChange = { vm.setDishName(index, it) },
                     onPriceChange = { vm.setDishPrice(index, it) },
@@ -225,14 +230,12 @@ fun EntryEditScreen(
                 )
             }
 
-            TextButton(
-                onClick = vm::addDish,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-                Spacer(Modifier.padding(start = 4.dp))
-                Text(stringResource(R.string.edit_add_dish))
-            }
+            ListActionRow(
+                addLabel = stringResource(R.string.edit_add_dish),
+                onAdd = vm::addDish,
+                isEditing = editingDishes,
+                onToggleEditing = { editingDishes = !editingDishes },
+            )
 
             // -----------------------------------------------------------------
             // Company & Notes
@@ -262,11 +265,32 @@ fun EntryEditScreen(
             // -----------------------------------------------------------------
             SectionHeader(stringResource(R.string.edit_section_photos))
 
-            Row {
-                OutlinedButton(onClick = { photoMenuOpen = true }) {
-                    Icon(Icons.Filled.Add, contentDescription = null)
-                    Text("  " + stringResource(R.string.edit_add_photo))
-                }
+            ReorderableColumn(
+                list = s.photos,
+                onSettle = { from, to -> vm.movePhoto(from, to) },
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) { _, photo, _ ->
+                PhotoEditRow(
+                    photo = photo,
+                    revealed = editingPhotos,
+                    onCaptionChange = { vm.setPhotoCaption(photo.path, it) },
+                    onRemove = { vm.removePhoto(photo.path) },
+                    dragHandleModifier = Modifier.draggableHandle(),
+                    dragHandleDescription = stringResource(R.string.edit_reorder_photo),
+                )
+            }
+
+            // Add Photo + Edit. Add Photo's TextButton opens a camera/gallery dropdown — the
+            // visual treatment matches the dish Add/Edit row above so the two list sections
+            // read as siblings.
+            Box {
+                ListActionRow(
+                    addLabel = stringResource(R.string.edit_add_photo),
+                    onAdd = { photoMenuOpen = true },
+                    isEditing = editingPhotos,
+                    onToggleEditing = { editingPhotos = !editingPhotos },
+                )
                 DropdownMenu(
                     expanded = photoMenuOpen,
                     onDismissRequest = { photoMenuOpen = false },
@@ -290,21 +314,6 @@ fun EntryEditScreen(
                         },
                     )
                 }
-            }
-
-            ReorderableColumn(
-                list = s.photos,
-                onSettle = { from, to -> vm.movePhoto(from, to) },
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) { _, photo, _ ->
-                PhotoEditRow(
-                    photo = photo,
-                    onCaptionChange = { vm.setPhotoCaption(photo.path, it) },
-                    onRemove = { vm.removePhoto(photo.path) },
-                    dragHandleModifier = Modifier.draggableHandle(),
-                    dragHandleDescription = stringResource(R.string.edit_reorder_photo),
-                )
             }
 
             Row(
@@ -347,25 +356,14 @@ private fun SectionHeader(title: String, first: Boolean = false) {
 @Composable
 private fun PhotoEditRow(
     photo: Photo,
+    revealed: Boolean,
     onCaptionChange: (String) -> Unit,
     onRemove: () -> Unit,
     dragHandleModifier: Modifier = Modifier,
     dragHandleDescription: String? = null,
 ) {
-    // Long-press anywhere on the row toggles "edit mode" for this row, revealing the drag
-    // handle and × button. Long-pressing the thumbnail is the most reliable trigger because
-    // it's a large non-text-field target; the caption text field consumes its own long-press
-    // (for text selection).
-    var revealed by remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { revealed = !revealed },
-                    onTap = { if (revealed) revealed = false },
-                )
-            },
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -411,6 +409,7 @@ private fun PhotoEditRow(
 @Composable
 private fun DishRow(
     draft: DishDraft,
+    revealed: Boolean,
     showRemove: Boolean,
     onNameChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
@@ -418,20 +417,8 @@ private fun DishRow(
     dragHandleModifier: Modifier = Modifier,
     dragHandleDescription: String? = null,
 ) {
-    // Long-press toggles "edit mode" for this row, revealing the drag handle and × button.
-    // Text-field children consume their own long-press gestures (for text selection), so the
-    // long-press on the row only catches the gaps between fields. That's enough for an
-    // affordance once the user knows the gesture exists.
-    var revealed by remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { revealed = !revealed },
-                    onTap = { if (revealed) revealed = false },
-                )
-            },
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -445,19 +432,16 @@ private fun DishRow(
             value = draft.name,
             onValueChange = onNameChange,
             label = { Text(stringResource(R.string.edit_field_dish)) },
-            placeholder = { Text(stringResource(R.string.edit_dish_placeholder)) },
             singleLine = true,
             modifier = Modifier.weight(1.5f),
         )
         // Price field: weight 1.1 (rather than 1) so the floated "Dish Price" label fits on
-        // one line on phone widths — the previous narrower allocation made the label wrap to
-        // two lines, which in turn forced the whole field to grow taller than the dish-name
-        // sibling and elongated the row downward.
+        // one line on phone widths — narrower would wrap the label to two lines and force the
+        // field to grow taller than the dish-name sibling.
         OutlinedTextField(
             value = draft.priceText,
             onValueChange = onPriceChange,
             label = { Text(stringResource(R.string.edit_field_price)) },
-            placeholder = { Text(stringResource(R.string.edit_price_placeholder)) },
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
             ),
@@ -566,4 +550,35 @@ private fun DragHandleIcon(
             .padding(top = 16.dp, bottom = 0.dp)
             .size(24.dp),
     )
+}
+
+/**
+ * The "Add … | Edit / Done" action row that sits beneath a reorderable list (dishes, photos).
+ * Add takes the bulk of the width as the primary action; Edit toggles the section's
+ * edit-list mode (drag handles + × buttons appear on each row).
+ */
+@Composable
+private fun ListActionRow(
+    addLabel: String,
+    onAdd: () -> Unit,
+    isEditing: Boolean,
+    onToggleEditing: () -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        TextButton(
+            onClick = onAdd,
+            modifier = Modifier.weight(1f),
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = null)
+            Spacer(Modifier.padding(start = 4.dp))
+            Text(addLabel)
+        }
+        TextButton(onClick = onToggleEditing) {
+            Icon(Icons.Filled.Edit, contentDescription = null)
+            Spacer(Modifier.padding(start = 4.dp))
+            Text(stringResource(
+                if (isEditing) R.string.edit_list_done else R.string.edit_list_edit
+            ))
+        }
+    }
 }
