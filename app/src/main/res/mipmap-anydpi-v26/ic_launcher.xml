@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  To swap which dango variant is the active icon, change the foreground reference below to one
-  of the three vectors in `res/drawable/`:
-    @drawable/ic_launcher_dango_trio   (active — hanami trio on stick, 45° rotated)
-    @drawable/ic_launcher_dango_face   (single ball with a face)
-    @drawable/ic_launcher_dango_book   (trio + open-book ribbon)
-  Mirror the same change in `ic_launcher_round.xml` so the rounded launcher mask matches.
--->
+<!-- Pastel-lavender background + the 45°-rotated hanami-trio dango as the foreground.
+     This is the user's locked-in icon; mirror any change in `ic_launcher_round.xml`. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_dango_book" />
+    <foreground android:drawable="@drawable/ic_launcher_dango_trio" />
 </adaptive-icon>

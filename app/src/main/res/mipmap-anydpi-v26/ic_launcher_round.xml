@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Keep the foreground reference in sync with `ic_launcher.xml` when swapping variants. -->
+<!-- Mirror of `ic_launcher.xml`; rounded launchers use this one. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_dango_book" />
+    <foreground android:drawable="@drawable/ic_launcher_dango_trio" />
 </adaptive-icon>
