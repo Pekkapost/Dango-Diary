@@ -63,7 +63,6 @@
     <string name="edit_take_photo">Take photo</string>
     <string name="edit_choose_photo">Choose from gallery</string>
     <string name="edit_save">Save</string>
-    <string name="edit_cancel">Cancel</string>
     <string name="edit_name_required">Name is required.</string>
     <string name="edit_rating_required">Rating must be 1–5.</string>
     <string name="edit_price_invalid">Price must be a non-negative number.</string>

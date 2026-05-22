@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +32,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -136,8 +134,13 @@ fun EntryEditScreen(
                     IconButton(onClick = onDone) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.edit_cancel),
+                            contentDescription = stringResource(R.string.action_back),
                         )
+                    }
+                },
+                actions = {
+                    TextButton(onClick = { vm.save(onDone = onDone) }) {
+                        Text(stringResource(R.string.edit_save))
                     }
                 },
             )
@@ -336,22 +339,8 @@ fun EntryEditScreen(
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedButton(
-                    onClick = onDone,
-                    modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.edit_cancel)) }
-
-                Button(
-                    onClick = { vm.save(onDone = onDone) },
-                    modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.edit_save)) }
-            }
+            // Save lives in the top app bar's actions slot; the back arrow doubles as cancel
+            // (drops any unsaved photo imports via the DisposableEffect above).
         }
     }
 }
