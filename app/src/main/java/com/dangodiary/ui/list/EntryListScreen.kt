@@ -601,6 +601,7 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.End,
                             modifier = Modifier.weight(1f),
                         )
                     }
