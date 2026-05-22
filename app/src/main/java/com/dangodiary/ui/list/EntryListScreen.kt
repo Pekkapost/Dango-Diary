@@ -534,66 +534,64 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            val first = photos.firstOrNull()
-            if (first != null) {
-                AsyncImage(
-                    model = File(first),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Restaurant,
+            // Photo (or placeholder) + an optional Legacy badge overlaid in the top-left
+            // corner — the badge sits on the image rather than crowding the text column.
+            Box(modifier = Modifier.size(64.dp)) {
+                val first = photos.firstOrNull()
+                if (first != null) {
+                    AsyncImage(
+                        model = File(first),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp)),
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Restaurant,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (entry.isLegacy) {
+                    LegacyBadge(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(2.dp),
                     )
                 }
             }
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = entry.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        )
-                        // Subtitle = city only. Cuisine still drives the filter sheet but is
-                        // not surfaced on the row — keeps the line short and lets the city
-                        // breathe. The entry's cuisine field is unaffected.
-                        val city = extractCity(entry.addressText)
-                        if (!city.isNullOrEmpty()) {
-                            Text(
-                                text = city,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = formatDate(entry.visitedOn),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (entry.isLegacy) {
-                            LegacyBadge(modifier = Modifier.padding(top = 2.dp))
-                        }
-                    }
-                }
+                Text(
+                    text = entry.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+                // Subtitle = "<date>  ·  <city>". Date in front, city after. Cuisine still
+                // drives the filter sheet but isn't surfaced on the row.
+                val city = extractCity(entry.addressText)
+                val subtitle = listOfNotNull(
+                    formatDate(entry.visitedOn),
+                    city?.takeIf { it.isNotEmpty() },
+                ).joinToString("  ·  ")
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingStars(rating = entry.rating, modifier = Modifier.weight(1f))
                     val totalCents = remember(entry.dishesJson) {

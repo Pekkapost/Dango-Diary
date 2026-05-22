@@ -1,5 +1,6 @@
 package com.dangodiary.ui.common
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -32,7 +33,8 @@ import java.io.File
  * Grid of photo thumbnails. Read-only (no remove buttons) by default; pass [onRemove] to add a
  * × overlay per cell. [captionFor], when non-null, renders the photo's caption as a small text
  * line below each thumbnail — empty captions are skipped so unlabelled photos don't get a blank
- * gap.
+ * gap. [onClick], when non-null, makes each thumbnail tappable — the caller typically uses it
+ * to open a larger view of the photo.
  */
 @Composable
 fun PhotoGrid(
@@ -40,6 +42,7 @@ fun PhotoGrid(
     modifier: Modifier = Modifier,
     onRemove: ((String) -> Unit)? = null,
     captionFor: ((String) -> String)? = null,
+    onClick: ((String) -> Unit)? = null,
 ) {
     if (paths.isEmpty()) return
     // 3 thumbnails per row regardless of screen width. Adaptive sizing had a 120 dp minimum
@@ -54,7 +57,11 @@ fun PhotoGrid(
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(8.dp))
+                        .then(
+                            if (onClick != null) Modifier.clickable { onClick(path) }
+                            else Modifier
+                        ),
                 ) {
                     AsyncImage(
                         model = File(path),

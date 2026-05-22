@@ -2,6 +2,9 @@ package com.dangodiary.ui.detail
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +46,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
+import java.io.File
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +73,7 @@ import com.dangodiary.DangoDiaryApp
 import com.dangodiary.data.CuisineCatalog
 import com.dangodiary.data.Dishes
 import com.dangodiary.data.Entry
+import com.dangodiary.data.Photo
 import com.dangodiary.data.Photos
 import com.dangodiary.ui.common.PhotoGrid
 import com.dangodiary.ui.common.RatingStars
@@ -320,11 +331,13 @@ private fun DetailBody(
             }
         }
 
+        var enlargedPhoto by remember { mutableStateOf<Photo?>(null) }
         if (photos.isNotEmpty()) {
             HorizontalDivider()
             PhotoGrid(
                 paths = photos.map { it.path },
                 captionFor = { path -> photos.firstOrNull { it.path == path }?.caption.orEmpty() },
+                onClick = { path -> enlargedPhoto = photos.firstOrNull { it.path == path } },
                 // Match the horizontal/vertical padding the other DetailSections use, so the
                 // grid doesn't sit flush against the divider or screen edges.
                 modifier = Modifier
@@ -332,6 +345,9 @@ private fun DetailBody(
                     .padding(horizontal = 10.dp, vertical = 12.dp)
                     .height(280.dp),
             )
+        }
+        enlargedPhoto?.let { photo ->
+            EnlargedPhotoDialog(photo = photo, onDismiss = { enlargedPhoto = null })
         }
     }
 }
@@ -393,4 +409,48 @@ private fun buildYelpWebUrl(name: String, location: String): String {
         ?.let { "&find_loc=${Uri.encode(it)}" }
         .orEmpty()
     return "https://www.yelp.com/search?find_desc=$desc$locParam"
+}
+
+/**
+ * Full-screen modal showing a single photo enlarged for easier viewing. The image fits the
+ * dialog (no cropping) and the caption sits below in white-on-dark. Tap anywhere to dismiss;
+ * the system back button also closes via the Dialog's onDismissRequest.
+ */
+@Composable
+private fun EnlargedPhotoDialog(photo: Photo, onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        val interaction = remember { MutableInteractionSource() }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.92f))
+                // Tap anywhere on the backdrop (including over the image — no ripple) closes.
+                .clickable(interactionSource = interaction, indication = null) { onDismiss() },
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp),
+            ) {
+                AsyncImage(
+                    model = File(photo.path),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (photo.caption.isNotBlank()) {
+                    Text(
+                        text = photo.caption,
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 16.dp),
+                    )
+                }
+            }
+        }
+    }
 }
