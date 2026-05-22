@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -129,6 +128,10 @@ fun EntryEditScreen(
             )
         },
     ) { padding ->
+        // Wait for the entry load (or the new-entry currency seed) before rendering — avoids
+        // a one-frame flash of empty fields when opening an existing entry. Matches the same
+        // pattern in SettingsScreen.
+        if (s.loading) return@Scaffold
         Column(
             modifier = Modifier
                 .fillMaxSize()

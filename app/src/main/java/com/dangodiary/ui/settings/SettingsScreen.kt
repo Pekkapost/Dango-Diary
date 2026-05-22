@@ -1,13 +1,18 @@
 package com.dangodiary.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -173,10 +179,34 @@ private fun ThemeRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(selected = selected, onClick = onSelect)
+        Box(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(
+                    // SYSTEM has no fixed swatch — show whatever the active scheme's primary
+                    // is right now so the swatch tracks the device's dynamic colour.
+                    if (option == ThemeOption.SYSTEM) MaterialTheme.colorScheme.primary
+                    else option.swatch
+                )
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant,
+                    CircleShape,
+                ),
+        )
         Text(
             text = option.displayName,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = 12.dp).weight(1f),
         )
+        if (option.isAppDefault) {
+            Text(
+                text = stringResource(R.string.settings_theme_app_default),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

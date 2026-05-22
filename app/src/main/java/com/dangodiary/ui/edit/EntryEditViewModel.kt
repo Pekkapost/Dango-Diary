@@ -257,9 +257,6 @@ class EntryEditViewModel(
             visitedOn = s.visitedOn,
             rating = s.rating,
             cuisine = s.cuisine,
-            // Legacy fields — always cleared at v3+. Real data lives in dishesJson.
-            meal = "",
-            dishPriceCents = null,
             dishesJson = Dishes.encode(finalDishes),
             notes = s.notes.trim(),
             companions = s.companions.trim(),

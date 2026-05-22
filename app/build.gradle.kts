@@ -71,9 +71,11 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+    // ui-tooling is debug-only so Android Studio's Layout Inspector can render the tree.
+    // ui-tooling-preview (the @Preview annotation library) is deliberately omitted — the
+    // codebase doesn't declare any @Preview composables. Add it back when one is added.
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.androidx.navigation.compose)

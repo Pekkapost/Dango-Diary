@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Entry::class],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class DiaryDatabase : RoomDatabase() {
@@ -25,9 +25,7 @@ abstract class DiaryDatabase : RoomDatabase() {
         }
 
         // v2 -> v3: introduce per-dish list (`dishes_json`). Backfills from the legacy single
-        // `meal` + `dish_price_cents` columns so existing entries keep their dish data. The
-        // legacy columns stay on the table for back-compat — a future migration may drop them
-        // via a table-recreate once we're confident no rollback path needs them.
+        // `meal` + `dish_price_cents` columns so existing entries keep their dish data.
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE entries ADD COLUMN dishes_json TEXT NOT NULL DEFAULT '[]'")
@@ -53,6 +51,47 @@ abstract class DiaryDatabase : RoomDatabase() {
             }
         }
 
+        // v3 -> v4: drop the legacy `meal` + `dish_price_cents` columns. SQLite below 3.35
+        // can't DROP COLUMN, so we use the standard table-recreate pattern (create new, copy
+        // rows by named columns, drop old, rename). Dish data lives in `dishes_json` from v3
+        // onward; the legacy columns have been written-as-empty by code since then.
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE entries_new (
+                        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        visited_on INTEGER NOT NULL,
+                        rating INTEGER NOT NULL,
+                        cuisine TEXT,
+                        dishes_json TEXT NOT NULL,
+                        notes TEXT NOT NULL,
+                        companions TEXT NOT NULL,
+                        currency_code TEXT NOT NULL,
+                        address_text TEXT,
+                        latitude REAL,
+                        longitude REAL,
+                        photo_paths_json TEXT NOT NULL,
+                        created_at INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    INSERT INTO entries_new (
+                        id, name, visited_on, rating, cuisine, dishes_json, notes, companions,
+                        currency_code, address_text, latitude, longitude, photo_paths_json,
+                        created_at
+                    )
+                    SELECT
+                        id, name, visited_on, rating, cuisine, dishes_json, notes, companions,
+                        currency_code, address_text, latitude, longitude, photo_paths_json,
+                        created_at
+                    FROM entries
+                """.trimIndent())
+                db.execSQL("DROP TABLE entries")
+                db.execSQL("ALTER TABLE entries_new RENAME TO entries")
+            }
+        }
+
         // Never use fallbackToDestructiveMigration — losing user data is not an upgrade path.
         fun build(context: Context): DiaryDatabase =
             Room.databaseBuilder(
@@ -60,7 +99,7 @@ abstract class DiaryDatabase : RoomDatabase() {
                 DiaryDatabase::class.java,
                 "diary.db",
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
     }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Trio + open-book ribbon. Three smaller dango balls (radius 7) stacked compactly at the top,
+  with a stylised open-book shape underneath: two trapezoidal pages meeting at a centre
+  crease. Hints at the "Diary" half of the name.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Top ball at (54, 28) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M47,28 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 z" />
+    <!-- Middle ball at (54, 44) -->
+    <path
+        android:fillColor="#FFF1E4"
+        android:pathData="M47,44 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 z" />
+    <!-- Bottom ball at (54, 60) -->
+    <path
+        android:fillColor="#FFE6DC"
+        android:pathData="M47,60 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 z" />
+    <!-- Open book — left page (white trapezoid sloping from centre crease to outer edge) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,74 L24,78 L24,86 L54,84 Z" />
+    <!-- Open book — right page (mirror) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,74 L84,78 L84,86 L54,84 Z" />
+</vector>

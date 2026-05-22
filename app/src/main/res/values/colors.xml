@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FF6750A4</color>
+    <!-- App icon background. Pink #FDA2F5 — the canonical Dango Diary pink. -->
+    <color name="ic_launcher_background">#FFFDA2F5</color>
 </resources>

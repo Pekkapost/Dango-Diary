@@ -84,6 +84,7 @@
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_theme">Theme</string>
+    <string name="settings_theme_app_default">App Default</string>
     <string name="settings_section_display">Display</string>
     <string name="settings_hide_total_price">Hide total price</string>
     <string name="settings_hide_total_price_help">Hides the per-entry total on the list and the price segment in the detail header. Per-dish prices are still shown.</string>

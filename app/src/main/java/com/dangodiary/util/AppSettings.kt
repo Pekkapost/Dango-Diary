@@ -14,8 +14,10 @@ import kotlinx.coroutines.flow.map
  * App-wide user preferences backed by a Preferences DataStore at
  * `<filesDir>/datastore/dango_diary_settings.preferences_pb`.
  *
- * Currently exposes one knob — the default currency code applied to new entries. Older entries
- * keep whatever currency they were saved with, so flipping this setting never rewrites history.
+ * Three knobs: default currency for new entries, theme preset, and hide-total-price toggle.
+ * Settings are read reactively via the Flow properties and re-render the UI when changed;
+ * the default-currency is only seeded onto *new* entries (existing entries keep whatever
+ * currency they were saved with).
  *
  * Single-instance pattern enforced by [Context.appSettingsDataStore]; the
  * [DangoDiaryApp][com.dangodiary.DangoDiaryApp] holds the wrapper.
@@ -52,7 +54,10 @@ class AppSettings(private val dataStore: DataStore<Preferences>) {
 
     companion object {
         const val FALLBACK_CURRENCY = "USD"
-        const val FALLBACK_THEME = "SYSTEM"
+        // Pink is the app default — see ThemeOption.PINK. Users who explicitly pick something
+        // else have their choice persisted; new installs and unrecognised stored values land
+        // here.
+        const val FALLBACK_THEME = "PINK"
         private val KEY_DEFAULT_CURRENCY = stringPreferencesKey("default_currency")
         private val KEY_THEME = stringPreferencesKey("theme")
         private val KEY_HIDE_TOTAL_PRICE = booleanPreferencesKey("hide_total_price")

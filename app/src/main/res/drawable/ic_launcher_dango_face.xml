@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Single dango ball with a small face: a large white circle (radius 28 at canvas centre) with
+  two dark eyes and a small smile arc. Designed to read as a friendly mascot at small sizes
+  rather than as a literal dango.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Body: 56 dp diameter centred at (54, 54) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M26,54 a28,28 0 1,0 56,0 a28,28 0 1,0 -56,0 z" />
+    <!-- Left eye: radius 3 at (46, 50) -->
+    <path
+        android:fillColor="#2A1A1A"
+        android:pathData="M43,50 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 z" />
+    <!-- Right eye: radius 3 at (62, 50) -->
+    <path
+        android:fillColor="#2A1A1A"
+        android:pathData="M59,50 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 z" />
+    <!-- Smile: a 2 dp-thick stroke arc from (47, 62) to (61, 62), bowed down through (54, 67) -->
+    <path
+        android:strokeColor="#2A1A1A"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M47,62 Q54,69 61,62" />
+</vector>

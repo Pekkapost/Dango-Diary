@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Hanami trio. Three dango balls stacked vertically (top: white, middle: cream, bottom: pale
+  rose) threaded on a slim brown stick that pokes out 6 dp top and bottom. All content stays
+  inside the inner 66 dp safe zone of the 108 dp adaptive-icon canvas.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stick: x = 53..55, y = 18..90 -->
+    <path
+        android:fillColor="#6B4423"
+        android:pathData="M53,18 h2 v72 h-2 z" />
+    <!-- Top ball, radius 9 at (54, 33) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,33 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 z" />
+    <!-- Middle ball at (54, 54) -->
+    <path
+        android:fillColor="#FFF1E4"
+        android:pathData="M45,54 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 z" />
+    <!-- Bottom ball at (54, 75) -->
+    <path
+        android:fillColor="#FFE6DC"
+        android:pathData="M45,75 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 z" />
+</vector>

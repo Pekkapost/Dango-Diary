@@ -19,15 +19,15 @@ Dango-Diary/
     └── src/main/
         ├── AndroidManifest.xml
         ├── java/com/dangodiary/
-        │   ├── DangoDiaryApp.kt       # Application — owns DB + PhotoStorage singletons
+        │   ├── DangoDiaryApp.kt       # Application — owns DB, PhotoStorage, AppSettings
         │   ├── MainActivity.kt        # Single activity, hosts the Compose nav graph
-        │   ├── data/                  # Room entity, DAO, Database, JSON converters
+        │   ├── data/                  # Room entity, DAO, Database, JSON converters (Photos, Dishes)
         │   ├── ui/
-        │   │   ├── theme/             # Material3 theme
+        │   │   ├── theme/             # Material3 theme + ThemeOption palette presets
         │   │   ├── nav/               # NavHost + route definitions
-        │   │   ├── list/, detail/, edit/   # One subfolder per screen
+        │   │   ├── list/, detail/, edit/, settings/   # One subfolder per screen
         │   │   └── common/            # Reusable composables (RatingStars, PhotoGrid, ...)
-        │   └── util/                  # PhotoStorage, Formatting
+        │   └── util/                  # PhotoStorage, AppSettings (DataStore wrapper), Formatting
         └── res/                       # strings, themes, drawables, mipmaps
 ```
 
@@ -79,7 +79,7 @@ KDoc (`/** … */`) goes on non-trivial public functions/classes. Single-line su
 
 ## 5. State & dependency injection
 
-- App-wide singletons (Room DB, `PhotoStorage`) live on the `Application` subclass [`DangoDiaryApp`](app/src/main/java/com/dangodiary/DangoDiaryApp.kt). No DI framework. Re-evaluate if the graph grows beyond a handful of nodes.
+- App-wide singletons (Room DB, `PhotoStorage`, `AppSettings`) live as `by lazy` properties on the `Application` subclass [`DangoDiaryApp`](app/src/main/java/com/dangodiary/DangoDiaryApp.kt). No DI framework. Re-evaluate if the graph grows beyond a handful of nodes.
 - ViewModels receive their dependencies via a `ViewModelProvider.Factory` defined in a `companion object` of the ViewModel itself. The screen Composable obtains the VM via `viewModel(factory = …)`.
 - UI state is `StateFlow<…>` exposed by the ViewModel and collected in Composables via `collectAsStateWithLifecycle()`.
 - No `LiveData`, no `GlobalScope`, no `runBlocking` on the main thread.
