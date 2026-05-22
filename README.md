@@ -174,7 +174,7 @@ adb logcat -s DangoDiaryApp PhotoStorage
 
 | Section | Fields |
 |---|---|
-| **Restaurant Information** | Restaurant Name (Google Places autocomplete — picking a suggestion auto-fills address + map pin); cuisine + date in a paired row; half-star rating (1–5 in 0.5 increments); address (editable, auto-filled or typed manually). |
+| **Restaurant Information** | Restaurant Name (Google Places autocomplete — picking a suggestion auto-fills address + map pin); cuisine + date in a paired row; half-star rating (1–5 in 0.5 increments); address (editable, auto-filled or typed manually). On new entries, a short pause after typing the name triggers a duplicate check — if a prior visit to the same restaurant exists, a prompt offers to view it. Picking *View previous visit* navigates forward to the detail screen; pressing back returns to the form with everything still filled in. |
 | **Dishes** | One or more dishes per entry. Each row: Dish name + Dish price. "Add another dish" appends rows. Drag a row's handle to reorder. Currency defaults to the app-wide setting. |
 | **Company & Notes** | Companions + free-form notes. |
 | **Photos** | Capture from camera or pick from gallery. Each photo has an optional caption. Drag a row's handle to reorder. |

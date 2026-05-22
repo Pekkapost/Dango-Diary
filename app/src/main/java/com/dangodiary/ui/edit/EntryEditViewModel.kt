@@ -15,6 +15,8 @@ import com.dangodiary.util.AppSettings
 import com.dangodiary.util.PhotoStorage
 import com.dangodiary.util.centsToEditableString
 import com.dangodiary.util.parsePriceInput
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.UUID
+
+/** How long the name field must be idle before we query the DB for an existing entry with the
+ *  same name. Long enough that we don't query on every keystroke, short enough that the prompt
+ *  appears soon after the user stops typing. */
+private const val DUPLICATE_CHECK_DEBOUNCE_MS = 600L
 
 /** One row in the dish list as the user is editing it. The price is held as the raw text the
  *  user typed; we only parse it at save time so partial input ("12.") doesn't blow up.
@@ -63,6 +70,14 @@ data class EditState(
     val nameError: Boolean = false,
     val ratingError: Boolean = false,
     val loading: Boolean = true,
+    /** Existing entries whose name (case + whitespace normalised) matches [name] — populated by
+     *  the debounced duplicate check. When non-empty AND the user hasn't dismissed the prompt
+     *  for this exact name yet, the edit screen shows a "you've been here before" dialog
+     *  offering to view the most recent visit. */
+    val duplicateMatches: List<Entry> = emptyList(),
+    /** Normalised name the user already dismissed the prompt for, so we don't keep popping the
+     *  dialog as they continue to edit the rest of the form. Cleared when the name changes. */
+    val duplicateDismissedFor: String? = null,
 )
 
 class EntryEditViewModel(
@@ -78,6 +93,10 @@ class EntryEditViewModel(
     // Paths added during this edit session that must be cleaned up if the user cancels
     // without saving. Existing photos on the row are not in here.
     private val addedPaths = mutableListOf<String>()
+
+    /** Outstanding debounced duplicate-check coroutine. Cancelled on every name change so a
+     *  fast-typing user only fires one DB query — the one after they stop. */
+    private var duplicateCheckJob: Job? = null
 
     init {
         if (id != null) {
@@ -133,7 +152,47 @@ class EntryEditViewModel(
         }
     }
 
-    fun setName(v: String) = _state.update { it.copy(name = v, nameError = false) }
+    fun setName(v: String) {
+        _state.update {
+            // Drop any prior duplicate hit / dismissal as soon as the name changes — they were
+            // tied to the previous value. The debounced check below will repopulate if the new
+            // name also matches an existing entry.
+            it.copy(
+                name = v,
+                nameError = false,
+                duplicateMatches = emptyList(),
+                duplicateDismissedFor = null,
+            )
+        }
+        scheduleDuplicateCheck(v)
+    }
+
+    /** Debounce: cancel the previous job, wait briefly, then query. Only runs for new entries
+     *  (editing an existing one trivially matches itself — no value in prompting). */
+    private fun scheduleDuplicateCheck(name: String) {
+        duplicateCheckJob?.cancel()
+        if (id != null) return
+        val normalised = name.trim()
+        if (normalised.isEmpty()) return
+        duplicateCheckJob = viewModelScope.launch {
+            delay(DUPLICATE_CHECK_DEBOUNCE_MS)
+            val hits = dao.findByNameIgnoreCase(normalised)
+            // Bail if the user kept typing — a newer scheduleDuplicateCheck call has already
+            // overwritten the state with its own results (or cleared them).
+            if (_state.value.name != name) return@launch
+            _state.update { it.copy(duplicateMatches = hits) }
+        }
+    }
+
+    /** User chose "Continue" on the duplicate prompt — suppress it for this exact name so we
+     *  don't re-prompt as they keep editing. Re-typing the name (even to the same value via
+     *  a different keystroke path) clears the suppression because [setName] resets it. */
+    fun dismissDuplicatePrompt() = _state.update {
+        it.copy(
+            duplicateMatches = emptyList(),
+            duplicateDismissedFor = it.name.trim(),
+        )
+    }
     fun setDate(v: Long) = _state.update { it.copy(visitedOn = v) }
     fun setRating(v: Int) = _state.update { it.copy(rating = v, ratingError = false) }
     fun setCuisine(v: String?) = _state.update { it.copy(cuisine = v) }
@@ -178,7 +237,7 @@ class EntryEditViewModel(
 
     /** Apply a place the user picked from name-field autocomplete: replaces name, address, and
      *  coordinates atomically. Clears the name error if it was set. */
-    fun applyPickedRestaurant(name: String, address: String, lat: Double, lng: Double) =
+    fun applyPickedRestaurant(name: String, address: String, lat: Double, lng: Double) {
         _state.update {
             it.copy(
                 name = name,
@@ -186,8 +245,14 @@ class EntryEditViewModel(
                 addressText = address,
                 latitude = lat,
                 longitude = lng,
+                // A pick replaces the name wholesale — treat it the same as fresh typing for
+                // duplicate-check purposes.
+                duplicateMatches = emptyList(),
+                duplicateDismissedFor = null,
             )
         }
+        scheduleDuplicateCheck(name)
+    }
 
     fun addPhotoPath(path: String) {
         addedPaths += path
@@ -218,7 +283,14 @@ class EntryEditViewModel(
         _state.update { it.copy(photos = it.photos.filterNot { it.path == path }) }
     }
 
-    fun cancel() {
+    /** Drop any imported photos when the edit screen leaves the back stack without a save —
+     *  for example the user hits the back arrow on a new entry. Lives in [onCleared] (not a
+     *  DisposableEffect on the screen) so navigating *forward* to the duplicate-prompt's
+     *  "view previous visit" detail screen doesn't trip cleanup; the ViewModel stays alive
+     *  while detail is on top, and the user gets all their in-progress fields back when they
+     *  return. [save] clears [addedPaths] first so a saved entry leaves nothing to delete. */
+    override fun onCleared() {
+        super.onCleared()
         photoStorage.delete(addedPaths)
         addedPaths.clear()
     }

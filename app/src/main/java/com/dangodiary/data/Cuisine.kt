@@ -30,6 +30,7 @@ object CuisineCatalog {
         Cuisine("mexican", "Mexican", CuisineGroup.RESTAURANT),
         Cuisine("pizza", "Pizza", CuisineGroup.RESTAURANT),
         Cuisine("ramen", "Ramen", CuisineGroup.RESTAURANT),
+        Cuisine("salad", "Salad", CuisineGroup.RESTAURANT),
         Cuisine("seafood", "Seafood", CuisineGroup.RESTAURANT),
         Cuisine("spanish", "Spanish", CuisineGroup.RESTAURANT),
         Cuisine("steakhouse", "Steakhouse", CuisineGroup.RESTAURANT),

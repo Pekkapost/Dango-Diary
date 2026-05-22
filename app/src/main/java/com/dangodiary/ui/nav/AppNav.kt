@@ -51,6 +51,10 @@ fun AppNav() {
             EntryEditScreen(
                 entryId = null,
                 onDone = { nav.popBackStack() },
+                // Duplicate-name prompt offers to view the existing entry. We navigate forward
+                // (not popping the edit screen) so back from detail returns the user to the
+                // half-filled form with all their state intact.
+                onViewExisting = { id -> nav.navigate(Routes.detail(id)) },
             )
         }
 

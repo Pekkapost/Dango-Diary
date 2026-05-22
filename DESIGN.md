@@ -83,6 +83,7 @@ KDoc (`/** … */`) goes on non-trivial public functions/classes. Single-line su
 - ViewModels receive their dependencies via a `ViewModelProvider.Factory` defined in a `companion object` of the ViewModel itself. The screen Composable obtains the VM via `viewModel(factory = …)`.
 - UI state is `StateFlow<…>` exposed by the ViewModel and collected in Composables via `collectAsStateWithLifecycle()`.
 - No `LiveData`, no `GlobalScope`, no `runBlocking` on the main thread.
+- Lifecycle-tied resource cleanup (e.g. deleting unsaved photo imports) belongs in `ViewModel.onCleared()`, not in a screen-level `DisposableEffect`. The Compose dispose fires when the screen leaves composition — including when navigating *forward* to another screen, with the back stack entry still alive — so it would tear down state the user expects back when they return.
 
 ---
 

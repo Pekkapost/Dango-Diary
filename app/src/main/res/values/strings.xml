@@ -67,6 +67,16 @@
     <string name="edit_rating_required">Rating must be 1–5.</string>
     <string name="edit_price_invalid">Price must be a non-negative number.</string>
 
+    <!-- Duplicate-name prompt: appears on a new entry when the typed name matches an existing
+         entry. Singular/plural count is rendered with a quantity string. -->
+    <string name="edit_duplicate_title">You\'ve been here before</string>
+    <plurals name="edit_duplicate_message">
+        <item quantity="one">You already have a visit to \"%1$s\" logged. Want to check it before adding a new one? Your current entry will be kept.</item>
+        <item quantity="other">You already have %2$d visits to \"%1$s\" logged. Want to check the most recent one before adding a new visit? Your current entry will be kept.</item>
+    </plurals>
+    <string name="edit_duplicate_view">View previous visit</string>
+    <string name="edit_duplicate_continue">Add new anyway</string>
+
     <!-- Detail screen -->
     <string name="detail_title">Restaurant</string>
     <string name="detail_action_edit">Edit</string>

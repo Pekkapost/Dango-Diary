@@ -17,6 +17,11 @@ interface EntryDao {
     @Query("SELECT * FROM entries WHERE id = :id LIMIT 1")
     fun observeById(id: Long): Flow<Entry?>
 
+    // TRIM + LOWER to match the same normalisation the duplicate-check applies on the client.
+    // Most recent visit first so the prompt can offer it as "your previous visit" directly.
+    @Query("SELECT * FROM entries WHERE LOWER(TRIM(name)) = LOWER(TRIM(:name)) ORDER BY visited_on DESC, created_at DESC")
+    suspend fun findByNameIgnoreCase(name: String): List<Entry>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entry: Entry): Long
 

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,9 +39,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -77,6 +79,7 @@ private val PRICE_INPUT_REGEX = Regex("^\\d*[.,]?\\d*$")
 fun EntryEditScreen(
     entryId: Long?,
     onDone: () -> Unit,
+    onViewExisting: (Long) -> Unit = {},
 ) {
     val ctx = LocalContext.current
     val app = ctx.applicationContext as DangoDiaryApp
@@ -117,10 +120,10 @@ fun EntryEditScreen(
         }
     }
 
-    // If the user navigates away without saving, drop any photos they imported.
-    DisposableEffect(Unit) {
-        onDispose { vm.cancel() }
-    }
+    // Photo cleanup lives in EntryEditViewModel.onCleared — that fires when the back stack
+    // entry is popped (true cancel), not when the screen navigates forward to the duplicate
+    // prompt's "view previous visit" detail screen. The latter must preserve in-progress
+    // photos so the user gets everything back when they return.
 
     Scaffold(
         topBar = {
@@ -348,8 +351,46 @@ fun EntryEditScreen(
             }
 
             // Save lives in the top app bar's actions slot; the back arrow doubles as cancel
-            // (drops any unsaved photo imports via the DisposableEffect above).
+            // (drops any unsaved photo imports via EntryEditViewModel.onCleared).
         }
+    }
+
+    // Duplicate-name prompt. Only appears on new entries (the VM filters out the self-match
+    // when editing an existing one). Picking "View previous visit" navigates forward to the
+    // detail screen — this screen and its ViewModel stay on the back stack, so pressing back
+    // from detail returns the user to the form with everything still filled in.
+    val matches = s.duplicateMatches
+    if (matches.isNotEmpty()) {
+        val mostRecent = matches.first()
+        AlertDialog(
+            onDismissRequest = vm::dismissDuplicatePrompt,
+            title = { Text(stringResource(R.string.edit_duplicate_title)) },
+            text = {
+                Text(
+                    pluralStringResource(
+                        R.plurals.edit_duplicate_message,
+                        matches.size,
+                        mostRecent.name,
+                        matches.size,
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    // Don't dismiss here — leave the prompt state intact. If the user comes
+                    // back from detail and hasn't changed the name, they're returning to an
+                    // already-resolved decision; we treat the navigation itself as the
+                    // dismissal so the dialog doesn't reappear.
+                    vm.dismissDuplicatePrompt()
+                    onViewExisting(mostRecent.id)
+                }) { Text(stringResource(R.string.edit_duplicate_view)) }
+            },
+            dismissButton = {
+                TextButton(onClick = vm::dismissDuplicatePrompt) {
+                    Text(stringResource(R.string.edit_duplicate_continue))
+                }
+            },
+        )
     }
 }
 
