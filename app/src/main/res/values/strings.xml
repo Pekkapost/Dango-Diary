@@ -57,7 +57,7 @@
     <string name="edit_section_company">Company &amp; Notes</string>
     <string name="edit_section_photos">Photos</string>
     <string name="edit_address_placeholder">Search for a place</string>
-    <string name="edit_add_photo">Add photo</string>
+    <string name="edit_add_photo">Add a photo</string>
     <string name="edit_take_photo">Take photo</string>
     <string name="edit_choose_photo">Choose from gallery</string>
     <string name="edit_save">Save</string>
@@ -70,6 +70,8 @@
     <string name="detail_title">Restaurant</string>
     <string name="detail_action_edit">Edit</string>
     <string name="detail_action_delete">Delete</string>
+    <string name="detail_action_more">More actions</string>
+    <string name="detail_action_yelp">Search on Yelp</string>
     <string name="detail_open_in_maps">Open in Maps</string>
     <string name="detail_show_map">Show map</string>
     <string name="detail_hide_map">Hide map</string>

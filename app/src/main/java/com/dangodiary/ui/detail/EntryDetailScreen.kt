@@ -3,6 +3,7 @@ package com.dangodiary.ui.detail
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -81,6 +85,8 @@ fun EntryDetailScreen(
     val hideTotalPrice by app.appSettings.hideTotalPrice
         .collectAsStateWithLifecycle(initialValue = false)
     var confirmDelete by remember { mutableStateOf(false) }
+    var overflowOpen by remember { mutableStateOf(false) }
+    val ctx = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -102,6 +108,31 @@ fun EntryDetailScreen(
                     }
                     IconButton(onClick = { confirmDelete = true }) {
                         Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.detail_action_delete))
+                    }
+                    Box {
+                        IconButton(onClick = { overflowOpen = true }) {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.detail_action_more),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = overflowOpen,
+                            onDismissRequest = { overflowOpen = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.detail_action_yelp)) },
+                                onClick = {
+                                    overflowOpen = false
+                                    val name = entry?.name ?: return@DropdownMenuItem
+                                    val loc = entry?.addressText.orEmpty()
+                                    val url = buildYelpSearchUrl(name, loc)
+                                    runCatching {
+                                        ctx.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                                    }
+                                },
+                            )
+                        }
                     }
                 },
             )
@@ -325,4 +356,15 @@ private fun DetailSection(
         )
         content()
     }
+}
+
+/** Yelp search URL for the given restaurant. Includes the address as `find_loc` when present
+ *  so Yelp narrows the search to the right area; without it the result depends on Yelp's
+ *  best guess from the device's IP. */
+private fun buildYelpSearchUrl(name: String, location: String): String {
+    val desc = Uri.encode(name.trim())
+    val locParam = location.trim().takeIf { it.isNotEmpty() }
+        ?.let { "&find_loc=${Uri.encode(it)}" }
+        .orEmpty()
+    return "https://www.yelp.com/search?find_desc=$desc$locParam"
 }
