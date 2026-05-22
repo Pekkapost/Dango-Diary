@@ -3,12 +3,17 @@ package com.dangodiary.ui.edit
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,9 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -45,8 +48,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dangodiary.R
 import com.dangodiary.DangoDiaryApp
+import com.dangodiary.R
 import com.dangodiary.ui.common.CuisinePickerField
 import com.dangodiary.ui.common.DatePickerField
 import com.dangodiary.ui.common.PhotoGrid
@@ -109,7 +112,10 @@ fun EntryEditScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onDone) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.edit_cancel))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.edit_cancel),
+                        )
                     }
                 },
             )
@@ -123,6 +129,11 @@ fun EntryEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // -----------------------------------------------------------------
+            // Restaurant — what & where & when
+            // -----------------------------------------------------------------
+            SectionHeader(stringResource(R.string.edit_section_restaurant), first = true)
+
             RestaurantNameField(
                 name = s.name,
                 onNameChange = vm::setName,
@@ -157,39 +168,13 @@ fun EntryEditScreen(
                 )
             }
 
-            Column {
-                OutlinedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    // Match the OutlinedTextField corner radius (extraSmall = 4.dp) so the
-                    // rating box reads as the same kind of element as the surrounding fields.
-                    shape = MaterialTheme.shapes.extraSmall,
-                    colors = CardDefaults.outlinedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ),
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-                        Text(
-                            text = stringResource(R.string.edit_field_rating),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        RatingStars(
-                            rating = s.rating,
-                            onRatingChange = vm::setRating,
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        )
-                    }
-                }
-                if (s.ratingError) {
-                    Text(
-                        text = stringResource(R.string.edit_rating_required),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-                    )
-                }
-            }
+            RatingFieldBox(
+                rating = s.rating,
+                onRatingChange = vm::setRating,
+                isError = s.ratingError,
+                errorText = stringResource(R.string.edit_rating_required),
+                label = stringResource(R.string.edit_field_rating),
+            )
 
             OutlinedTextField(
                 value = s.addressText,
@@ -200,6 +185,11 @@ fun EntryEditScreen(
                 singleLine = true,
             )
 
+            // -----------------------------------------------------------------
+            // Meal — what you ordered + what it cost
+            // -----------------------------------------------------------------
+            SectionHeader(stringResource(R.string.edit_section_meal))
+
             OutlinedTextField(
                 value = s.meal,
                 onValueChange = vm::setMeal,
@@ -209,32 +199,25 @@ fun EntryEditScreen(
                 singleLine = true,
             )
 
-            Row(
+            OutlinedTextField(
+                value = s.priceText,
+                onValueChange = vm::setPriceText,
+                label = { Text(stringResource(R.string.edit_field_price)) },
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal,
+                ),
+                isError = s.priceError,
+                supportingText = if (s.priceError) {
+                    { Text(stringResource(R.string.edit_price_invalid)) }
+                } else null,
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedTextField(
-                    value = s.priceText,
-                    onValueChange = vm::setPriceText,
-                    label = { Text(stringResource(R.string.edit_field_price)) },
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                        keyboardType = KeyboardType.Decimal,
-                    ),
-                    isError = s.priceError,
-                    supportingText = if (s.priceError) {
-                        { Text(stringResource(R.string.edit_price_invalid)) }
-                    } else null,
-                    singleLine = true,
-                    modifier = Modifier.weight(2f),
-                )
-                OutlinedTextField(
-                    value = s.currencyCode,
-                    onValueChange = vm::setCurrencyCode,
-                    label = { Text(stringResource(R.string.edit_field_currency)) },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            )
+
+            // -----------------------------------------------------------------
+            // Company & notes
+            // -----------------------------------------------------------------
+            SectionHeader(stringResource(R.string.edit_section_company))
 
             OutlinedTextField(
                 value = s.companions,
@@ -252,6 +235,11 @@ fun EntryEditScreen(
                     .fillMaxWidth()
                     .height(140.dp),
             )
+
+            // -----------------------------------------------------------------
+            // Photos
+            // -----------------------------------------------------------------
+            SectionHeader(stringResource(R.string.edit_section_photos))
 
             Row {
                 OutlinedButton(onClick = { photoMenuOpen = true }) {
@@ -309,5 +297,82 @@ fun EntryEditScreen(
             }
         }
     }
+}
 
+/** Section heading. Adds extra top spacing for visual separation between sections, except on
+ *  the first one (where the scaffold already provides the top padding). */
+@Composable
+private fun SectionHeader(title: String, first: Boolean = false) {
+    if (!first) Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+    )
+}
+
+/**
+ * Rating field rendered as an outlined box with a notched floating label, mirroring the
+ * [OutlinedTextField] visual treatment so it reads as the same kind of element as the
+ * surrounding fields. The five stars distribute across the box width via [Arrangement.SpaceBetween].
+ *
+ * Drawn from scratch (border + offset label with surface background) rather than borrowing a
+ * disabled OutlinedTextField, so we can put arbitrary tap-aware content inside the field area
+ * without fighting the text field's internal layout.
+ */
+@Composable
+private fun RatingFieldBox(
+    rating: Int,
+    onRatingChange: (Int) -> Unit,
+    isError: Boolean,
+    errorText: String,
+    label: String,
+) {
+    val borderColor =
+        if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+    val labelColor =
+        if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+    val shape = MaterialTheme.shapes.extraSmall
+    val surface = MaterialTheme.colorScheme.surface
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .border(width = 1.dp, color = borderColor, shape = shape),
+        ) {
+            RatingStars(
+                rating = rating,
+                onRatingChange = onRatingChange,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            )
+            // Floating label notching the top border. The surface-coloured background masks the
+            // border line behind it, producing the standard OutlinedTextField notch effect. The
+            // -7 dp Y offset lifts the label's centerline onto the border itself.
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = labelColor,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 12.dp)
+                    .offset(y = (-7).dp)
+                    .background(surface)
+                    .padding(horizontal = 4.dp),
+            )
+        }
+        if (isError) {
+            Text(
+                text = errorText,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+            )
+        }
+    }
 }

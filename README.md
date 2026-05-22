@@ -135,14 +135,16 @@ adb logcat -s DangoDiaryApp PhotoStorage
 | Module | Description |
 |---|---|
 | [app/build.gradle.kts](app/build.gradle.kts) | Module config — pulls `MAPS_API_KEY` from `local.properties` into the manifest and into `BuildConfig` (for Places SDK init). |
-| [DangoDiaryApp.kt](app/src/main/java/com/dangodiary/DangoDiaryApp.kt) | Application class. Lazy-initializes the Room DB and PhotoStorage, and initializes the Places SDK. |
+| [DangoDiaryApp.kt](app/src/main/java/com/dangodiary/DangoDiaryApp.kt) | Application class. Lazy-initializes the Room DB, PhotoStorage, and AppSettings (DataStore), and initializes the Places SDK. |
 | [MainActivity.kt](app/src/main/java/com/dangodiary/MainActivity.kt) | Single activity. Sets the Compose content and theme. |
 | [data/](app/src/main/java/com/dangodiary/data/) | `Entry` entity, `EntryDao` (Flow + suspend), `DiaryDatabase`, the cuisine catalog, and JSON helpers for photo paths. |
 | [ui/list/](app/src/main/java/com/dangodiary/ui/list/) | List screen, search/filter/sort ViewModel. |
 | [ui/detail/](app/src/main/java/com/dangodiary/ui/detail/) | Detail screen with section layout (location → meal → dined with → notes → photos) + delete flow. |
-| [ui/edit/](app/src/main/java/com/dangodiary/ui/edit/) | New/edit form, restaurant-name autocomplete, photo capture/import. |
+| [ui/edit/](app/src/main/java/com/dangodiary/ui/edit/) | New/edit form, restaurant-name autocomplete, photo capture/import. Form fields grouped into Restaurant / Meal / Company & notes / Photos sections. |
+| [ui/settings/](app/src/main/java/com/dangodiary/ui/settings/) | App-wide settings screen (default currency, today). Reachable from the list screen's top-bar gear. |
 | [ui/common/](app/src/main/java/com/dangodiary/ui/common/) | Reusable composables (`RatingStars`, `DatePickerField`, `CuisinePickerField`, `RestaurantNameField`, `PhotoGrid`). |
 | [util/PhotoStorage.kt](app/src/main/java/com/dangodiary/util/PhotoStorage.kt) | Copies captured/imported photos into `filesDir/photos/` and returns stable paths. |
+| [util/AppSettings.kt](app/src/main/java/com/dangodiary/util/AppSettings.kt) | Preferences DataStore wrapper for app-wide user settings. |
 | [util/Formatting.kt](app/src/main/java/com/dangodiary/util/Formatting.kt) | Date, currency, and city-extraction formatters. |
 
 ## Features
@@ -150,8 +152,9 @@ adb logcat -s DangoDiaryApp PhotoStorage
 | Surface | Description |
 |---|---|
 | **List screen** | All entries you've recorded, with text search, sort (recency / rating / name / price), and filter chips (min rating, has-photo). Each row shows photo, name, cuisine + city, half-star rating, date, and dish price. |
-| **Add/edit form** | Name (Google Places autocomplete — typing the restaurant name suggests matching places and auto-fills the address + map pin on pick), cuisine + date (paired row), half-star rating (1–5 in 0.5 increments), address (auto-filled from the name pick but editable, or typed manually), meal (what you ordered), dish price + currency, who you went with, notes, photos from camera or gallery. |
+| **Add/edit form** | Grouped into four sections. **Restaurant**: name (Google Places autocomplete — typing the restaurant name suggests matching places and auto-fills the address + map pin on pick), cuisine + date (paired row), half-star rating (1–5 in 0.5 increments), address (auto-filled from the name pick but editable, or typed manually). **Meal**: meal description + dish price (currency defaults to the app-wide setting). **Company & notes**: who you dined with + free-form notes. **Photos**: capture from camera or pick from gallery. |
 | **Detail screen** | Header with name + stars + cuisine·date·price subtitle, then sections: Location (address + embedded read-only map + "Open in Maps"), Meal, Dined with, Notes, and photos at the bottom. Sections only appear when they have content. |
+| **Settings** | Top-bar gear icon on the list screen opens a settings screen. Currently one knob: default currency code for new entries. Existing entries keep their saved currency. |
 
 All data is stored locally in a Room database at the app's private data directory. Photos are copied into the app's `filesDir/photos/`. Nothing leaves the device except Places autocomplete queries while you're typing a restaurant name.
 

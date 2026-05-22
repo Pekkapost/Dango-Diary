@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -63,6 +64,7 @@ import java.io.File
 fun EntryListScreen(
     onAdd: () -> Unit,
     onOpen: (Long) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val app = LocalContext.current.applicationContext as DangoDiaryApp
     val vm: EntryListViewModel = viewModel(factory = EntryListViewModel.factory(app))
@@ -73,7 +75,7 @@ fun EntryListScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.list_title)) },
-                actions = { ListToolbarActions(filters, vm) },
+                actions = { ListToolbarActions(filters, vm, onOpenSettings) },
             )
         },
         floatingActionButton = {
@@ -133,6 +135,7 @@ fun EntryListScreen(
 private fun ListToolbarActions(
     filters: ListFilters,
     vm: EntryListViewModel,
+    onOpenSettings: () -> Unit,
 ) {
     var sortOpen by remember { mutableStateOf(false) }
     var filterOpen by remember { mutableStateOf(false) }
@@ -187,6 +190,10 @@ private fun ListToolbarActions(
                 onClick = { vm.clearFilters(); filterOpen = false },
             )
         }
+    }
+
+    IconButton(onClick = onOpenSettings) {
+        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_title))
     }
 }
 

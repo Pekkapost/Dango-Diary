@@ -30,12 +30,17 @@
     <string name="edit_cuisine_placeholder">Select cuisine</string>
     <string name="edit_cuisine_clear">Clear cuisine</string>
     <string name="edit_field_notes">Notes</string>
-    <string name="edit_field_companions">Who you went with (comma separated)</string>
+    <string name="edit_field_companions">Dined with (comma separated)</string>
     <string name="edit_field_meal">Meal</string>
     <string name="edit_meal_placeholder">What did you order?</string>
     <string name="edit_field_price">Dish price</string>
-    <string name="edit_field_currency">Currency code (e.g. USD)</string>
     <string name="edit_field_address">Address</string>
+
+    <!-- Edit screen sections -->
+    <string name="edit_section_restaurant">Restaurant</string>
+    <string name="edit_section_meal">Meal</string>
+    <string name="edit_section_company">Company &amp; notes</string>
+    <string name="edit_section_photos">Photos</string>
     <string name="edit_address_placeholder">Search for a place</string>
     <string name="edit_add_photo">Add photo</string>
     <string name="edit_take_photo">Take photo</string>
@@ -59,4 +64,12 @@
     <string name="detail_section_notes">Notes</string>
     <string name="detail_section_with">Dined with</string>
     <string name="detail_section_location">Location</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_defaults">Defaults</string>
+    <string name="settings_default_currency">Default currency code</string>
+    <string name="settings_default_currency_help">Applied to new entries. Existing entries keep their saved currency.</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_saved">Saved</string>
 </resources>

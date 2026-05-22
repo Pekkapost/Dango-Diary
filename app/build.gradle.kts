@@ -88,5 +88,7 @@ dependencies {
     implementation(libs.google.play.services.maps)
     implementation(libs.google.places)
 
+    implementation(libs.androidx.datastore.preferences)
+
     implementation(libs.kotlinx.serialization.json)
 }

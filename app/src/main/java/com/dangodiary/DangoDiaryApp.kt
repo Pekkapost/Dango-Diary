@@ -3,7 +3,9 @@ package com.dangodiary
 import android.app.Application
 import android.util.Log
 import com.dangodiary.data.DiaryDatabase
+import com.dangodiary.util.AppSettings
 import com.dangodiary.util.PhotoStorage
+import com.dangodiary.util.buildAppSettings
 import com.google.android.libraries.places.api.Places
 
 private const val TAG = "DangoDiaryApp"
@@ -16,6 +18,7 @@ class DangoDiaryApp : Application() {
 
     val database: DiaryDatabase by lazy { DiaryDatabase.build(this) }
     val photoStorage: PhotoStorage by lazy { PhotoStorage(this) }
+    val appSettings: AppSettings by lazy { buildAppSettings(this) }
 
     override fun onCreate() {
         super.onCreate()

@@ -8,6 +8,7 @@ import com.dangodiary.DangoDiaryApp
 import com.dangodiary.data.Entry
 import com.dangodiary.data.EntryDao
 import com.dangodiary.data.PhotoPaths
+import com.dangodiary.util.AppSettings
 import com.dangodiary.util.PhotoStorage
 import com.dangodiary.util.centsToEditableString
 import com.dangodiary.util.parsePriceInput
@@ -19,8 +20,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.util.Currency
-import java.util.Locale
 
 data class EditState(
     val id: Long? = null,
@@ -32,7 +31,9 @@ data class EditState(
     val notes: String = "",
     val companions: String = "",
     val priceText: String = "",
-    val currencyCode: String = Currency.getInstance(Locale.getDefault()).currencyCode,
+    // Defaults to AppSettings.FALLBACK_CURRENCY until the new-entry init coroutine reads the
+    // user's actual preference; existing entries overwrite this with their saved currency.
+    val currencyCode: String = AppSettings.FALLBACK_CURRENCY,
     val addressText: String = "",
     val latitude: Double? = null,
     val longitude: Double? = null,
@@ -47,6 +48,7 @@ class EntryEditViewModel(
     private val id: Long?,
     private val dao: EntryDao,
     private val photoStorage: PhotoStorage,
+    private val settings: AppSettings,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditState(id = id))
@@ -65,7 +67,13 @@ class EntryEditViewModel(
                 loadFrom(entry)
             }
         } else {
-            _state.update { it.copy(loading = false) }
+            viewModelScope.launch {
+                // New entry: seed the currency from the user's app-wide preference. Existing
+                // entries keep their own saved code (via loadFrom), so changing the setting
+                // never rewrites history.
+                val currency = settings.defaultCurrency.first()
+                _state.update { it.copy(currencyCode = currency, loading = false) }
+            }
         }
     }
 
@@ -101,7 +109,6 @@ class EntryEditViewModel(
     fun setNotes(v: String) = _state.update { it.copy(notes = v) }
     fun setCompanions(v: String) = _state.update { it.copy(companions = v) }
     fun setPriceText(v: String) = _state.update { it.copy(priceText = v, priceError = false) }
-    fun setCurrencyCode(v: String) = _state.update { it.copy(currencyCode = v.uppercase()) }
 
     /** Manual edits to the address field. Coordinates are intentionally preserved — if the
      *  user is tweaking the address after picking a place, they're usually fixing a typo, not
@@ -196,6 +203,7 @@ class EntryEditViewModel(
                         id = id,
                         dao = app.database.entryDao(),
                         photoStorage = app.photoStorage,
+                        settings = app.appSettings,
                     ) as T
             }
     }

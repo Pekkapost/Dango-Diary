@@ -9,12 +9,14 @@ import androidx.navigation.navArgument
 import com.dangodiary.ui.detail.EntryDetailScreen
 import com.dangodiary.ui.edit.EntryEditScreen
 import com.dangodiary.ui.list.EntryListScreen
+import com.dangodiary.ui.settings.SettingsScreen
 
 object Routes {
     const val LIST = "list"
     const val DETAIL = "detail/{id}"
     const val EDIT_NEW = "edit/new"
     const val EDIT_EXISTING = "edit/{id}"
+    const val SETTINGS = "settings"
 
     fun detail(id: Long) = "detail/$id"
     fun edit(id: Long) = "edit/$id"
@@ -29,6 +31,7 @@ fun AppNav() {
             EntryListScreen(
                 onAdd = { nav.navigate(Routes.EDIT_NEW) },
                 onOpen = { id -> nav.navigate(Routes.detail(id)) },
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
             )
         }
 
@@ -60,6 +63,10 @@ fun AppNav() {
                 entryId = id,
                 onDone = { nav.popBackStack() },
             )
+        }
+
+        composable(Routes.SETTINGS) {
+            SettingsScreen(onBack = { nav.popBackStack() })
         }
     }
 }
