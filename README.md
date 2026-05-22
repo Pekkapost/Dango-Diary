@@ -18,6 +18,7 @@ Dango-Diary/
 │       └── res/                    # strings, themes, drawables
 ├── DESIGN.md                       # Project conventions and style
 ├── CLOUD-SETUP.md                  # Step-by-step Google Cloud setup (key, APIs, cost guards)
+├── RELEASE-SETUP.md                # One-time release-signing setup for personal-install APKs
 ├── TESTING.md                      # Headless emulator + remote scrcpy workflow
 └── gradle/libs.versions.toml       # Single source of dependency versions
 ```
