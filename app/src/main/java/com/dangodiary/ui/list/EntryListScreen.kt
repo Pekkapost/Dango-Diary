@@ -596,7 +596,7 @@ private fun EntryRow(entry: Entry, hideTotalPrice: Boolean, onClick: () -> Unit)
                     )
                     if (city != null) {
                         Text(
-                            text = "·  $city",
+                            text = city,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
