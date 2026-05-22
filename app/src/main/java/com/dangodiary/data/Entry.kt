@@ -19,12 +19,19 @@ data class Entry(
     /** ID from [CuisineCatalog]; null = unset. */
     val cuisine: String? = null,
 
+    /** Legacy single-dish name; superseded by [dishesJson]. Kept on the row for back-compat
+     *  and always written as empty by code at or after v3. To be dropped in a future migration. */
     val meal: String = "",
+
+    @ColumnInfo(name = "dishes_json")
+    val dishesJson: String = "[]",
 
     val notes: String = "",
 
     val companions: String = "",
 
+    /** Legacy single-dish price; superseded by per-dish prices in [dishesJson]. Kept for
+     *  back-compat and always written as null by code at or after v3. */
     @ColumnInfo(name = "dish_price_cents")
     val dishPriceCents: Long? = null,
 

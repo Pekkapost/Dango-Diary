@@ -3,24 +3,25 @@ package com.dangodiary.ui.edit
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -31,8 +32,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -42,19 +45,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.dangodiary.DangoDiaryApp
 import com.dangodiary.R
+import com.dangodiary.data.Photo
 import com.dangodiary.ui.common.CuisinePickerField
 import com.dangodiary.ui.common.DatePickerField
-import com.dangodiary.ui.common.PhotoGrid
 import com.dangodiary.ui.common.RatingStars
 import com.dangodiary.ui.common.RestaurantNameField
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,7 +138,7 @@ fun EntryEditScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // -----------------------------------------------------------------
-            // Restaurant — what & where & when
+            // Restaurant Information — what & where & when
             // -----------------------------------------------------------------
             SectionHeader(stringResource(R.string.edit_section_restaurant), first = true)
 
@@ -186,36 +194,31 @@ fun EntryEditScreen(
             )
 
             // -----------------------------------------------------------------
-            // Meal — what you ordered + what it cost
+            // Dishes — one or more dishes per entry
             // -----------------------------------------------------------------
-            SectionHeader(stringResource(R.string.edit_section_meal))
+            SectionHeader(stringResource(R.string.edit_section_dishes))
 
-            OutlinedTextField(
-                value = s.meal,
-                onValueChange = vm::setMeal,
-                label = { Text(stringResource(R.string.edit_field_meal)) },
-                placeholder = { Text(stringResource(R.string.edit_meal_placeholder)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
+            s.dishes.forEachIndexed { index, draft ->
+                DishRow(
+                    draft = draft,
+                    showRemove = s.dishes.size > 1,
+                    onNameChange = { vm.setDishName(index, it) },
+                    onPriceChange = { vm.setDishPrice(index, it) },
+                    onRemove = { vm.removeDish(index) },
+                )
+            }
 
-            OutlinedTextField(
-                value = s.priceText,
-                onValueChange = vm::setPriceText,
-                label = { Text(stringResource(R.string.edit_field_price)) },
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                ),
-                isError = s.priceError,
-                supportingText = if (s.priceError) {
-                    { Text(stringResource(R.string.edit_price_invalid)) }
-                } else null,
-                singleLine = true,
+            TextButton(
+                onClick = vm::addDish,
                 modifier = Modifier.fillMaxWidth(),
-            )
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = null)
+                Spacer(Modifier.padding(start = 4.dp))
+                Text(stringResource(R.string.edit_add_dish))
+            }
 
             // -----------------------------------------------------------------
-            // Company & notes
+            // Company & Notes
             // -----------------------------------------------------------------
             SectionHeader(stringResource(R.string.edit_section_company))
 
@@ -223,6 +226,7 @@ fun EntryEditScreen(
                 value = s.companions,
                 onValueChange = vm::setCompanions,
                 label = { Text(stringResource(R.string.edit_field_companions)) },
+                placeholder = { Text(stringResource(R.string.edit_companions_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -271,11 +275,11 @@ fun EntryEditScreen(
                 }
             }
 
-            if (s.photoPaths.isNotEmpty()) {
-                PhotoGrid(
-                    paths = s.photoPaths,
-                    onRemove = vm::removePhoto,
-                    modifier = Modifier.height(360.dp),
+            s.photos.forEach { photo ->
+                PhotoEditRow(
+                    photo = photo,
+                    onCaptionChange = { vm.setPhotoCaption(photo.path, it) },
+                    onRemove = { vm.removePhoto(photo.path) },
                 )
             }
 
@@ -312,13 +316,111 @@ private fun SectionHeader(title: String, first: Boolean = false) {
 }
 
 /**
- * Rating field rendered as an outlined box with a notched floating label, mirroring the
- * [OutlinedTextField] visual treatment so it reads as the same kind of element as the
- * surrounding fields. The five stars distribute across the box width via [Arrangement.SpaceBetween].
+ * One photo row in the edit form: thumbnail on the left, an optional caption text field on the
+ * right, and a remove (×) button at the end. Captions are stored on the [Photo] and persisted
+ * with the entry via [com.dangodiary.data.Photos].
+ */
+@Composable
+private fun PhotoEditRow(
+    photo: Photo,
+    onCaptionChange: (String) -> Unit,
+    onRemove: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        AsyncImage(
+            model = File(photo.path),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(8.dp)),
+        )
+        OutlinedTextField(
+            value = photo.caption,
+            onValueChange = onCaptionChange,
+            label = { Text(stringResource(R.string.edit_field_photo_caption)) },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.padding(top = 4.dp),
+        ) {
+            Icon(
+                Icons.Filled.Close,
+                contentDescription = stringResource(R.string.edit_remove_photo),
+            )
+        }
+    }
+}
+
+/**
+ * One dish row: name on the left, price on the right, with an optional remove (×) button when
+ * there's more than one dish in the list.
+ */
+@Composable
+private fun DishRow(
+    draft: DishDraft,
+    showRemove: Boolean,
+    onNameChange: (String) -> Unit,
+    onPriceChange: (String) -> Unit,
+    onRemove: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        OutlinedTextField(
+            value = draft.name,
+            onValueChange = onNameChange,
+            label = { Text(stringResource(R.string.edit_field_dish)) },
+            placeholder = { Text(stringResource(R.string.edit_dish_placeholder)) },
+            singleLine = true,
+            modifier = Modifier.weight(2f),
+        )
+        OutlinedTextField(
+            value = draft.priceText,
+            onValueChange = onPriceChange,
+            label = { Text(stringResource(R.string.edit_field_price)) },
+            placeholder = { Text(stringResource(R.string.edit_price_placeholder)) },
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+            ),
+            isError = draft.priceError,
+            supportingText = if (draft.priceError) {
+                { Text(stringResource(R.string.edit_price_invalid)) }
+            } else null,
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        if (showRemove) {
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.padding(top = 4.dp),
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.edit_remove_dish),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Rating field rendered as a disabled [OutlinedTextField] with the stars overlaid in its
+ * content area. The text field provides the exact same border + notched floating-label visual
+ * treatment as every other field on the form, with zero pixel-tweaking on our side. The stars
+ * overlay sits in the field's content area and uses [Arrangement.SpaceBetween] to fill the row.
  *
- * Drawn from scratch (border + offset label with surface background) rather than borrowing a
- * disabled OutlinedTextField, so we can put arbitrary tap-aware content inside the field area
- * without fighting the text field's internal layout.
+ * The disabled colours are overridden so the field reads as active. The same "disabled but
+ * styled-active" trick is used in [com.dangodiary.ui.common.DatePickerField] and
+ * [com.dangodiary.ui.common.CuisinePickerField].
  */
 @Composable
 private fun RatingFieldBox(
@@ -328,51 +430,40 @@ private fun RatingFieldBox(
     errorText: String,
     label: String,
 ) {
-    val borderColor =
-        if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
-    val labelColor =
-        if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-    val shape = MaterialTheme.shapes.extraSmall
-    val surface = MaterialTheme.colorScheme.surface
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Box(
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            // A single space keeps the field "non-empty" so the floating label stays up. The
+            // text colour is transparent so the space never renders.
+            value = " ",
+            onValueChange = {},
+            readOnly = true,
+            enabled = false,
+            isError = isError,
+            label = { Text(label) },
+            supportingText = if (isError) {
+                { Text(errorText) }
+            } else null,
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = Color.Transparent,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledSupportingTextColor = MaterialTheme.colorScheme.error,
+                // Mirror the error variants so isError flips border + label colours too.
+                errorTextColor = Color.Transparent,
+            ),
+        )
+        // Stars overlay the field's content area. Field default min height is 56 dp; centering
+        // the 48 dp star row inside that takes a 4 dp top padding. Horizontal padding of 12 dp
+        // matches OutlinedTextField's internal content insets.
+        RatingStars(
+            rating = rating,
+            onRatingChange = onRatingChange,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .border(width = 1.dp, color = borderColor, shape = shape),
-        ) {
-            RatingStars(
-                rating = rating,
-                onRatingChange = onRatingChange,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            )
-            // Floating label notching the top border. The surface-coloured background masks the
-            // border line behind it, producing the standard OutlinedTextField notch effect. The
-            // -7 dp Y offset lifts the label's centerline onto the border itself.
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = labelColor,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 12.dp)
-                    .offset(y = (-7).dp)
-                    .background(surface)
-                    .padding(horizontal = 4.dp),
-            )
-        }
-        if (isError) {
-            Text(
-                text = errorText,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-            )
-        }
+                .align(Alignment.TopStart)
+                .padding(start = 12.dp, end = 12.dp, top = 4.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        )
     }
 }

@@ -5,9 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dangodiary.DangoDiaryApp
+import com.dangodiary.data.Dish
+import com.dangodiary.data.Dishes
 import com.dangodiary.data.Entry
 import com.dangodiary.data.EntryDao
-import com.dangodiary.data.PhotoPaths
+import com.dangodiary.data.Photo
+import com.dangodiary.data.Photos
 import com.dangodiary.util.AppSettings
 import com.dangodiary.util.PhotoStorage
 import com.dangodiary.util.centsToEditableString
@@ -21,26 +24,32 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+/** One row in the dish list as the user is editing it. The price is held as the raw text the
+ *  user typed; we only parse it at save time so partial input ("12.") doesn't blow up. */
+data class DishDraft(
+    val name: String = "",
+    val priceText: String = "",
+    val priceError: Boolean = false,
+)
+
 data class EditState(
     val id: Long? = null,
     val name: String = "",
     val visitedOn: Long = LocalDate.now().toEpochDay(),
     val rating: Int = 0,
     val cuisine: String? = null,
-    val meal: String = "",
+    val dishes: List<DishDraft> = listOf(DishDraft()),
     val notes: String = "",
     val companions: String = "",
-    val priceText: String = "",
     // Defaults to AppSettings.FALLBACK_CURRENCY until the new-entry init coroutine reads the
     // user's actual preference; existing entries overwrite this with their saved currency.
     val currencyCode: String = AppSettings.FALLBACK_CURRENCY,
     val addressText: String = "",
     val latitude: Double? = null,
     val longitude: Double? = null,
-    val photoPaths: List<String> = emptyList(),
+    val photos: List<Photo> = emptyList(),
     val nameError: Boolean = false,
     val ratingError: Boolean = false,
-    val priceError: Boolean = false,
     val loading: Boolean = true,
 )
 
@@ -78,6 +87,18 @@ class EntryEditViewModel(
     }
 
     private fun loadFrom(entry: Entry) {
+        val savedDishes = Dishes.decode(entry.dishesJson).map { dish ->
+            DishDraft(
+                name = dish.name,
+                priceText = dish.priceCents
+                    ?.let { cents -> centsToEditableString(cents, entry.currencyCode) }
+                    .orEmpty(),
+            )
+        }
+        // Fall back to a single empty dish if the saved list is empty so the UI always renders
+        // at least one row. Pre-v3 entries that escaped the migration backfill end up here too.
+        val dishes = savedDishes.ifEmpty { listOf(DishDraft()) }
+
         _state.update {
             it.copy(
                 id = entry.id,
@@ -85,17 +106,14 @@ class EntryEditViewModel(
                 visitedOn = entry.visitedOn,
                 rating = entry.rating,
                 cuisine = entry.cuisine,
-                meal = entry.meal,
+                dishes = dishes,
                 notes = entry.notes,
                 companions = entry.companions,
-                priceText = entry.dishPriceCents
-                    ?.let { cents -> centsToEditableString(cents, entry.currencyCode) }
-                    .orEmpty(),
                 currencyCode = entry.currencyCode,
                 addressText = entry.addressText.orEmpty(),
                 latitude = entry.latitude,
                 longitude = entry.longitude,
-                photoPaths = PhotoPaths.decode(entry.photoPathsJson),
+                photos = Photos.decode(entry.photoPathsJson),
                 loading = false,
             )
         }
@@ -105,10 +123,34 @@ class EntryEditViewModel(
     fun setDate(v: Long) = _state.update { it.copy(visitedOn = v) }
     fun setRating(v: Int) = _state.update { it.copy(rating = v, ratingError = false) }
     fun setCuisine(v: String?) = _state.update { it.copy(cuisine = v) }
-    fun setMeal(v: String) = _state.update { it.copy(meal = v) }
     fun setNotes(v: String) = _state.update { it.copy(notes = v) }
     fun setCompanions(v: String) = _state.update { it.copy(companions = v) }
-    fun setPriceText(v: String) = _state.update { it.copy(priceText = v, priceError = false) }
+
+    fun setDishName(index: Int, v: String) = updateDish(index) { it.copy(name = v) }
+    fun setDishPrice(index: Int, v: String) = updateDish(index) {
+        it.copy(priceText = v, priceError = false)
+    }
+
+    fun addDish() = _state.update { it.copy(dishes = it.dishes + DishDraft()) }
+
+    fun removeDish(index: Int) = _state.update {
+        // Always keep at least one row so the form has somewhere to type. Clearing the last
+        // remaining dish is equivalent to leaving it blank.
+        val next = it.dishes.toMutableList()
+        if (next.size <= 1) {
+            next[0] = DishDraft()
+        } else if (index in next.indices) {
+            next.removeAt(index)
+        }
+        it.copy(dishes = next)
+    }
+
+    private fun updateDish(index: Int, transform: (DishDraft) -> DishDraft) = _state.update {
+        if (index !in it.dishes.indices) return@update it
+        val next = it.dishes.toMutableList()
+        next[index] = transform(next[index])
+        it.copy(dishes = next)
+    }
 
     /** Manual edits to the address field. Coordinates are intentionally preserved — if the
      *  user is tweaking the address after picking a place, they're usually fixing a typo, not
@@ -130,7 +172,7 @@ class EntryEditViewModel(
 
     fun addPhotoPath(path: String) {
         addedPaths += path
-        _state.update { it.copy(photoPaths = it.photoPaths + path) }
+        _state.update { it.copy(photos = it.photos + Photo(path = path)) }
     }
 
     fun importPhotoFromUri(uri: Uri) {
@@ -140,13 +182,17 @@ class EntryEditViewModel(
         }
     }
 
+    fun setPhotoCaption(path: String, caption: String) = _state.update { st ->
+        st.copy(photos = st.photos.map { if (it.path == path) it.copy(caption = caption) else it })
+    }
+
     fun removePhoto(path: String) {
         // If the user added it in this session and then removed it, delete the file too.
         if (path in addedPaths) {
             addedPaths -= path
             photoStorage.delete(listOf(path))
         }
-        _state.update { it.copy(photoPaths = it.photoPaths - path) }
+        _state.update { it.copy(photos = it.photos.filterNot { it.path == path }) }
     }
 
     fun cancel() {
@@ -159,15 +205,43 @@ class EntryEditViewModel(
         val name = s.name.trim()
         val nameErr = name.isEmpty()
         val ratingErr = s.rating !in 1..10
-        val priceCents: Long? = if (s.priceText.isBlank()) null
-        else parsePriceInput(s.priceText, s.currencyCode)
-        val priceErr = s.priceText.isNotBlank() && priceCents == null
 
-        if (nameErr || ratingErr || priceErr) {
+        // Parse every dish row that has a non-blank price; any invalid price flips its row's
+        // priceError flag. Empty price text is fine (price unknown). Empty dish name + empty
+        // price = row gets dropped on save.
+        var anyPriceErr = false
+        val parsedDishes = s.dishes.mapIndexed { i, draft ->
+            if (draft.priceText.isBlank()) {
+                draft.copy(priceError = false) to null
+            } else {
+                val cents = parsePriceInput(draft.priceText, s.currencyCode)
+                if (cents == null) {
+                    anyPriceErr = true
+                    draft.copy(priceError = true) to null
+                } else {
+                    draft.copy(priceError = false) to cents
+                }
+            }
+        }
+
+        if (nameErr || ratingErr || anyPriceErr) {
             _state.update {
-                it.copy(nameError = nameErr, ratingError = ratingErr, priceError = priceErr)
+                it.copy(
+                    nameError = nameErr,
+                    ratingError = ratingErr,
+                    dishes = parsedDishes.map { (draft, _) -> draft },
+                )
             }
             return
+        }
+
+        // Build the persisted dish list: drop fully-blank rows (no name AND no price); keep
+        // a row that has either. The fallback below ensures we always store at least an empty
+        // list rather than dropping the column when the user added no dishes at all.
+        val finalDishes = parsedDishes.mapNotNull { (draft, cents) ->
+            val cleanName = draft.name.trim()
+            if (cleanName.isEmpty() && cents == null) null
+            else Dish(name = cleanName, priceCents = cents)
         }
 
         val toSave = Entry(
@@ -176,15 +250,17 @@ class EntryEditViewModel(
             visitedOn = s.visitedOn,
             rating = s.rating,
             cuisine = s.cuisine,
-            meal = s.meal.trim(),
+            // Legacy fields — always cleared at v3+. Real data lives in dishesJson.
+            meal = "",
+            dishPriceCents = null,
+            dishesJson = Dishes.encode(finalDishes),
             notes = s.notes.trim(),
             companions = s.companions.trim(),
-            dishPriceCents = priceCents,
             currencyCode = s.currencyCode,
             addressText = s.addressText.trim().ifEmpty { null },
             latitude = s.latitude,
             longitude = s.longitude,
-            photoPathsJson = PhotoPaths.encode(s.photoPaths),
+            photoPathsJson = Photos.encode(s.photos.map { it.copy(caption = it.caption.trim()) }),
         )
 
         viewModelScope.launch {

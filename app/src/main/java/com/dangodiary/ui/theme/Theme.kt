@@ -1,44 +1,35 @@
 package com.dangodiary.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dangodiary.DangoDiaryApp
+import com.dangodiary.util.AppSettings
 
-private val LightScheme = lightColorScheme(
-    primary = Color(0xFF6750A4),
-    secondary = Color(0xFF625B71),
-    tertiary = Color(0xFF7D5260),
-)
-
-private val DarkScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    secondary = Color(0xFFCCC2DC),
-    tertiary = Color(0xFFEFB8C8),
-)
-
+/**
+ * Root theme wrapper. Reads the user's [ThemeOption] preference reactively from
+ * [AppSettings.themeName] so a change made in the Settings screen re-themes the whole app
+ * immediately — no restart, no re-navigation.
+ *
+ * Dark mode follows the system. [ThemeOption.SYSTEM] uses the default Material 3 schemes; the
+ * other options carry their own hand-tuned light + dark colour pairs in [ThemeOption].
+ *
+ * Material You dynamic colour is intentionally dropped: it overrides the user's chosen theme
+ * with the wallpaper-derived scheme on Android 12+, which defeats the purpose of an in-app
+ * theme picker. If we want it back, expose it as a separate setting.
+ */
 @Composable
-fun DangoDiaryTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit,
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val ctx = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
-        }
-        darkTheme -> DarkScheme
-        else -> LightScheme
-    }
+fun DangoDiaryTheme(content: @Composable () -> Unit) {
+    val app = LocalContext.current.applicationContext as DangoDiaryApp
+    val themeName by app.appSettings.themeName
+        .collectAsStateWithLifecycle(initialValue = AppSettings.FALLBACK_THEME)
+    val option = ThemeOption.fromName(themeName)
+    val dark = isSystemInDarkTheme()
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = colorSchemeFor(option, dark),
         content = content,
     )
 }

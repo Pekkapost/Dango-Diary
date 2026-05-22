@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,8 +54,9 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.dangodiary.R
 import com.dangodiary.DangoDiaryApp
 import com.dangodiary.data.CuisineCatalog
-import com.dangodiary.data.PhotoPaths
+import com.dangodiary.data.Dishes
 import com.dangodiary.data.Entry
+import com.dangodiary.data.Photos
 import com.dangodiary.ui.common.PhotoGrid
 import com.dangodiary.ui.common.RatingStars
 import com.dangodiary.util.formatDate
@@ -129,7 +131,14 @@ fun EntryDetailScreen(
 private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
     val ctx = LocalContext.current
     val photos = remember(entry.photoPathsJson) {
-        PhotoPaths.decode(entry.photoPathsJson)
+        Photos.decode(entry.photoPathsJson)
+    }
+    val dishes = remember(entry.dishesJson) {
+        Dishes.decode(entry.dishesJson)
+    }
+    val totalCents: Long? = remember(dishes) {
+        val priced = dishes.mapNotNull { it.priceCents }
+        if (priced.isEmpty()) null else priced.sum()
     }
     val lat = entry.latitude
     val lng = entry.longitude
@@ -137,8 +146,8 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
     val subtitle = buildList {
         CuisineCatalog.labelFor(entry.cuisine)?.let { add(it) }
         add(formatDate(entry.visitedOn))
-        if (entry.dishPriceCents != null) {
-            add(formatPrice(entry.dishPriceCents, entry.currencyCode))
+        if (totalCents != null) {
+            add(formatPrice(totalCents, entry.currencyCode))
         }
     }.joinToString("  ·  ")
 
@@ -199,10 +208,32 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
             }
         }
 
-        if (entry.meal.isNotBlank()) {
+        if (dishes.isNotEmpty()) {
             HorizontalDivider()
-            DetailSection(title = stringResource(R.string.detail_section_meal)) {
-                Text(entry.meal, style = MaterialTheme.typography.bodyMedium)
+            DetailSection(title = stringResource(R.string.detail_section_dishes)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    dishes.forEach { dish ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = dish.name.ifBlank {
+                                    stringResource(R.string.detail_dish_unnamed)
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            if (dish.priceCents != null) {
+                                Text(
+                                    text = formatPrice(dish.priceCents, entry.currencyCode),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -223,10 +254,11 @@ private fun DetailBody(entry: Entry, modifier: Modifier = Modifier) {
         if (photos.isNotEmpty()) {
             HorizontalDivider()
             PhotoGrid(
-                paths = photos,
+                paths = photos.map { it.path },
+                captionFor = { path -> photos.firstOrNull { it.path == path }?.caption.orEmpty() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(240.dp),
+                    .height(280.dp),
             )
         }
     }

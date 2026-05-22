@@ -63,13 +63,14 @@ Expect 10–30 fps depending on your SSH latency. Mouse, keyboard, and (on scrcp
 ## What to test (matches the plan's verification steps)
 
 1. **Empty list renders** — app launches to "No restaurants yet. Tap Add restaurant to add your first." Search with no matches reads "No restaurants match your search."
-2. **Add restaurant** — tap the FAB, fill in name (pick a Places suggestion to auto-fill the address), date + rating + meal + price + companions, attach a photo, save. The list shows the new entry.
+2. **Add restaurant** — tap the FAB, fill in Restaurant Name (pick a Places suggestion to auto-fill the address), date + rating + a dish (name + price), tap "Add another dish" and fill in a second dish, set Companions, attach a photo and give it a caption, save. The list shows the new entry with the sum of dish prices; opening the detail shows the photo with its caption underneath.
 3. **Detail** — tap the entry. All fields render, map is embedded read-only.
 4. **Edit** — change the rating, save, confirm list reflects the change.
 5. **Search / sort / filter** — add a second restaurant, search by name, sort by rating, filter by min-rating.
 6. **Delete** — confirm delete dialog, row disappears from list.
 7. **Process death** — `adb shell am force-stop com.dangodiary`, relaunch — data still there.
-8. **Settings — default currency** — tap the gear icon in the list-screen top bar, change the default currency to e.g. `EUR`, Save. Tap Add restaurant, fill in name + price + rating, save. The new entry's price renders with the EUR symbol on the list and detail screens. Open an existing entry's detail page: its previously-saved currency (likely USD) is unchanged.
+8. **Settings — default currency** — tap the gear icon in the list-screen top bar, change the default currency to e.g. `EUR`, Save. Tap Add restaurant, fill in name + a dish with price + rating, save. The new entry's price renders with the EUR symbol on the list and detail screens. Open an existing entry's detail page: its previously-saved currency (likely USD) is unchanged.
+9. **Settings — theme** — at the top of Settings, tap each theme preset (System default / Pink / Purple / Green). Every screen should re-tint immediately — primary buttons, the rating stars colour stays amber regardless (deliberate), top app bar tint, and the settings screen's own section headers all shift to the new primary colour. No restart should be required.
 
 ## Caveats
 

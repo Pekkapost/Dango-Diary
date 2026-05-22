@@ -4,9 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dangodiary.DangoDiaryApp
-import com.dangodiary.data.PhotoPaths
+import com.dangodiary.data.Dishes
 import com.dangodiary.data.Entry
 import com.dangodiary.data.EntryDao
+import com.dangodiary.data.Photos
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -63,13 +64,20 @@ private fun applyFilters(all: List<Entry>, f: ListFilters): List<Entry> {
             if (!haystack.contains(q)) return@filter false
         }
         if (entry.rating < f.minRating * 2) return@filter false
-        if (f.onlyWithPhoto && PhotoPaths.decode(entry.photoPathsJson).isEmpty()) return@filter false
+        if (f.onlyWithPhoto && Photos.decode(entry.photoPathsJson).isEmpty()) return@filter false
         true
     }
     return when (f.sort) {
         Sort.RECENT -> filtered.sortedByDescending { it.visitedOn }
         Sort.RATING -> filtered.sortedByDescending { it.rating }
         Sort.NAME -> filtered.sortedBy { it.name.lowercase() }
-        Sort.PRICE -> filtered.sortedBy { it.dishPriceCents ?: Long.MAX_VALUE }
+        Sort.PRICE -> filtered.sortedBy { entry ->
+            // Sort by the sum of all dish prices, treating "no priced dishes" as the max so
+            // unpriced entries sink to the bottom (matches the old single-price behaviour).
+            Dishes.decode(entry.dishesJson).mapNotNull { it.priceCents }
+                .takeIf { it.isNotEmpty() }
+                ?.sum()
+                ?: Long.MAX_VALUE
+        }
     }
 }

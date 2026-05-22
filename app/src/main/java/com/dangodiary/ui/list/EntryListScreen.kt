@@ -51,8 +51,9 @@ import coil.compose.AsyncImage
 import com.dangodiary.R
 import com.dangodiary.DangoDiaryApp
 import com.dangodiary.data.CuisineCatalog
-import com.dangodiary.data.PhotoPaths
+import com.dangodiary.data.Dishes
 import com.dangodiary.data.Entry
+import com.dangodiary.data.Photos
 import com.dangodiary.ui.common.RatingStars
 import com.dangodiary.util.extractCity
 import com.dangodiary.util.formatDate
@@ -224,7 +225,7 @@ private fun ActiveFilterChips(filters: ListFilters, vm: EntryListViewModel) {
 @Composable
 private fun EntryRow(entry: Entry, onClick: () -> Unit) {
     val photos = remember(entry.photoPathsJson) {
-        PhotoPaths.decode(entry.photoPathsJson)
+        Photos.paths(entry.photoPathsJson)
     }
     Card(
         modifier = Modifier
@@ -291,9 +292,14 @@ private fun EntryRow(entry: Entry, onClick: () -> Unit) {
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingStars(rating = entry.rating, modifier = Modifier.weight(1f))
-                    if (entry.dishPriceCents != null) {
+                    val totalCents = remember(entry.dishesJson) {
+                        Dishes.decode(entry.dishesJson).mapNotNull { it.priceCents }
+                            .takeIf { it.isNotEmpty() }
+                            ?.sum()
+                    }
+                    if (totalCents != null) {
                         Text(
-                            text = formatPrice(entry.dishPriceCents, entry.currencyCode),
+                            text = formatPrice(totalCents, entry.currencyCode),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

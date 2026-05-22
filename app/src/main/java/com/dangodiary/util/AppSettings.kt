@@ -25,13 +25,25 @@ class AppSettings(private val dataStore: DataStore<Preferences>) {
         prefs[KEY_DEFAULT_CURRENCY] ?: FALLBACK_CURRENCY
     }
 
+    /** The theme the user picked, stored by [com.dangodiary.ui.theme.ThemeOption.name]. The
+     *  view layer maps the name back to the enum and to a [androidx.compose.material3.ColorScheme]. */
+    val themeName: Flow<String> = dataStore.data.map { prefs ->
+        prefs[KEY_THEME] ?: FALLBACK_THEME
+    }
+
     suspend fun setDefaultCurrency(code: String) {
         dataStore.edit { it[KEY_DEFAULT_CURRENCY] = code.trim().uppercase() }
     }
 
+    suspend fun setTheme(name: String) {
+        dataStore.edit { it[KEY_THEME] = name }
+    }
+
     companion object {
         const val FALLBACK_CURRENCY = "USD"
+        const val FALLBACK_THEME = "SYSTEM"
         private val KEY_DEFAULT_CURRENCY = stringPreferencesKey("default_currency")
+        private val KEY_THEME = stringPreferencesKey("theme")
     }
 }
 

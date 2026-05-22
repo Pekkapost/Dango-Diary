@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dangodiary.DangoDiaryApp
-import com.dangodiary.data.PhotoPaths
 import com.dangodiary.data.Entry
 import com.dangodiary.data.EntryDao
+import com.dangodiary.data.Photos
 import com.dangodiary.util.PhotoStorage
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +26,7 @@ class EntryDetailViewModel(
     fun delete(onDone: () -> Unit) {
         val current = entry.value ?: return
         viewModelScope.launch {
-            photoStorage.delete(PhotoPaths.decode(current.photoPathsJson))
+            photoStorage.delete(Photos.paths(current.photoPathsJson))
             dao.delete(current)
             onDone()
         }

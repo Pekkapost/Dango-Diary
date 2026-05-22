@@ -23,23 +23,29 @@
     <!-- Edit screen -->
     <string name="edit_title_new">New restaurant</string>
     <string name="edit_title_edit">Edit restaurant</string>
-    <string name="edit_field_name">Name</string>
+    <string name="edit_field_name">Restaurant Name</string>
     <string name="edit_field_date">Date visited</string>
     <string name="edit_field_rating">Rating</string>
     <string name="edit_field_cuisine">Cuisine</string>
     <string name="edit_cuisine_placeholder">Select cuisine</string>
     <string name="edit_cuisine_clear">Clear cuisine</string>
     <string name="edit_field_notes">Notes</string>
-    <string name="edit_field_companions">Dined with (comma separated)</string>
-    <string name="edit_field_meal">Meal</string>
-    <string name="edit_meal_placeholder">What did you order?</string>
+    <string name="edit_field_companions">Companions (comma separated)</string>
+    <string name="edit_companions_placeholder">Who did you dine with?</string>
+    <string name="edit_field_dish">Dish</string>
+    <string name="edit_dish_placeholder">What did you order?</string>
     <string name="edit_field_price">Dish price</string>
+    <string name="edit_price_placeholder">How much did your dish cost?</string>
     <string name="edit_field_address">Address</string>
+    <string name="edit_add_dish">Add another dish</string>
+    <string name="edit_remove_dish">Remove dish</string>
+    <string name="edit_field_photo_caption">Caption (optional)</string>
+    <string name="edit_remove_photo">Remove photo</string>
 
     <!-- Edit screen sections -->
-    <string name="edit_section_restaurant">Restaurant</string>
-    <string name="edit_section_meal">Meal</string>
-    <string name="edit_section_company">Company &amp; notes</string>
+    <string name="edit_section_restaurant">Restaurant Information</string>
+    <string name="edit_section_dishes">Dishes</string>
+    <string name="edit_section_company">Company &amp; Notes</string>
     <string name="edit_section_photos">Photos</string>
     <string name="edit_address_placeholder">Search for a place</string>
     <string name="edit_add_photo">Add photo</string>
@@ -60,13 +66,15 @@
     <string name="detail_delete_confirm_message">This cannot be undone.</string>
     <string name="detail_delete_confirm_ok">Delete</string>
     <string name="detail_delete_confirm_cancel">Cancel</string>
-    <string name="detail_section_meal">Meal</string>
+    <string name="detail_section_dishes">Dishes</string>
+    <string name="detail_dish_unnamed">(unnamed dish)</string>
     <string name="detail_section_notes">Notes</string>
-    <string name="detail_section_with">Dined with</string>
+    <string name="detail_section_with">Companions</string>
     <string name="detail_section_location">Location</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
+    <string name="settings_section_theme">Theme</string>
     <string name="settings_section_defaults">Defaults</string>
     <string name="settings_default_currency">Default currency code</string>
     <string name="settings_default_currency_help">Applied to new entries. Existing entries keep their saved currency.</string>
