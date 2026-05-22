@@ -3,6 +3,7 @@ package com.dangodiary.ui.edit
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -350,15 +352,29 @@ private fun PhotoEditRow(
     dragHandleModifier: Modifier = Modifier,
     dragHandleDescription: String? = null,
 ) {
+    // Long-press anywhere on the row toggles "edit mode" for this row, revealing the drag
+    // handle and × button. Long-pressing the thumbnail is the most reliable trigger because
+    // it's a large non-text-field target; the caption text field consumes its own long-press
+    // (for text selection).
+    var revealed by remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { revealed = !revealed },
+                    onTap = { if (revealed) revealed = false },
+                )
+            },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        DragHandleIcon(
-            modifier = dragHandleModifier,
-            contentDescription = dragHandleDescription,
-        )
+        if (revealed) {
+            DragHandleIcon(
+                modifier = dragHandleModifier,
+                contentDescription = dragHandleDescription,
+            )
+        }
         AsyncImage(
             model = File(photo.path),
             contentDescription = null,
@@ -374,14 +390,16 @@ private fun PhotoEditRow(
             singleLine = true,
             modifier = Modifier.weight(1f),
         )
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier.padding(top = 4.dp),
-        ) {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = stringResource(R.string.edit_remove_photo),
-            )
+        if (revealed) {
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.padding(top = 4.dp),
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.edit_remove_photo),
+                )
+            }
         }
     }
 }
@@ -400,23 +418,41 @@ private fun DishRow(
     dragHandleModifier: Modifier = Modifier,
     dragHandleDescription: String? = null,
 ) {
+    // Long-press toggles "edit mode" for this row, revealing the drag handle and × button.
+    // Text-field children consume their own long-press gestures (for text selection), so the
+    // long-press on the row only catches the gaps between fields. That's enough for an
+    // affordance once the user knows the gesture exists.
+    var revealed by remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { revealed = !revealed },
+                    onTap = { if (revealed) revealed = false },
+                )
+            },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        DragHandleIcon(
-            modifier = dragHandleModifier,
-            contentDescription = dragHandleDescription,
-        )
+        if (revealed) {
+            DragHandleIcon(
+                modifier = dragHandleModifier,
+                contentDescription = dragHandleDescription,
+            )
+        }
         OutlinedTextField(
             value = draft.name,
             onValueChange = onNameChange,
             label = { Text(stringResource(R.string.edit_field_dish)) },
             placeholder = { Text(stringResource(R.string.edit_dish_placeholder)) },
             singleLine = true,
-            modifier = Modifier.weight(2f),
+            modifier = Modifier.weight(1.5f),
         )
+        // Price field: weight 1.1 (rather than 1) so the floated "Dish Price" label fits on
+        // one line on phone widths — the previous narrower allocation made the label wrap to
+        // two lines, which in turn forced the whole field to grow taller than the dish-name
+        // sibling and elongated the row downward.
         OutlinedTextField(
             value = draft.priceText,
             onValueChange = onPriceChange,
@@ -430,9 +466,9 @@ private fun DishRow(
                 { Text(stringResource(R.string.edit_price_invalid)) }
             } else null,
             singleLine = true,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1.1f),
         )
-        if (showRemove) {
+        if (showRemove && revealed) {
             IconButton(
                 onClick = onRemove,
                 modifier = Modifier.padding(top = 4.dp),
@@ -487,17 +523,18 @@ private fun RatingFieldBox(
                     errorTextColor = Color.Transparent,
                 ),
             )
-            // Stars overlay the field's content area, centered vertically inside the Box (which
-            // is now the same height as the OutlinedTextField since we pulled supportingText
-            // out). Horizontal padding of 12 dp matches OutlinedTextField's internal content
-            // insets so the outermost stars line up with the field's left/right edges.
+            // Stars overlay the field's content area. Horizontal padding of 12 dp matches
+            // OutlinedTextField's internal content insets so the outermost stars line up with
+            // the field's left/right edges. The 6 dp top padding biases the row downward —
+            // Box's Alignment.Center landed visually a touch high because the floated label
+            // shifts the field's effective content centre below its geometric centre.
             RatingStars(
                 rating = rating,
                 onRatingChange = onRatingChange,
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(start = 12.dp, end = 12.dp, top = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             )
         }

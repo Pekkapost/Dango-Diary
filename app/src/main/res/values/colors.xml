@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App icon background. Deep purple #6A1B9A — matches the Purple app-default theme so
-         the launcher icon and the in-app primary colour read as the same brand. -->
-    <color name="ic_launcher_background">#FF6A1B9A</color>
+    <!-- App icon background. Purple #9C27B0 (Material Purple 500) — same family as the
+         Purple app-default theme's primary (#6A1B9A) but a noticeable step lighter so the
+         icon doesn't read as a dark blob on the home screen. -->
+    <color name="ic_launcher_background">#FF9C27B0</color>
 </resources>

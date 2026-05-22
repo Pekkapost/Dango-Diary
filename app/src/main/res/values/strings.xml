@@ -41,7 +41,7 @@
     <string name="edit_companions_placeholder">Who did you dine with?</string>
     <string name="edit_field_dish">Dish</string>
     <string name="edit_dish_placeholder">What did you order?</string>
-    <string name="edit_field_price">Dish price</string>
+    <string name="edit_field_price">Dish Price</string>
     <string name="edit_price_placeholder">How much did your dish cost?</string>
     <string name="edit_field_address">Address</string>
     <string name="edit_add_dish">Add another dish</string>
